@@ -1,4 +1,4 @@
-#include <gio/gio.h>
+ #include <gio/gio.h>
 
 #include "ua-ubuntu-advantage-generated.h"
 
