@@ -16,6 +16,9 @@ jobs:
       - name: Verify formatting
         run: clang-format src/*.[ch]
 
+      - name: Install dependencies
+        run: apt-get install libglib2.0-dev meson ninja
+
       - name: Meson
         run: meson _build
 
