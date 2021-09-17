@@ -1,0 +1,23 @@
+name: C
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Verify formatting
+        run: clang-format src/*.[ch]
+
+      - name: Meson
+        run: meson _build
+
+      - name: Build
+        run: ninja -C _build
