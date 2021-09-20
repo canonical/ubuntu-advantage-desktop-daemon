@@ -9,7 +9,9 @@ struct _UaDaemon {
   GObject parent_instance;
 
   gboolean replace;
+  GDBusConnection *connection;
   UaUbuntuAdvantage *ua;
+  GPtrArray *services;
 };
 
 G_DEFINE_TYPE(UaDaemon, ua_daemon, G_TYPE_OBJECT)
@@ -38,6 +40,50 @@ static void callback_data_free(CallbackData *data) {
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(CallbackData, callback_data_free)
+
+// Called when 'ua status' completes.
+static void get_status_cb(GObject *object, GAsyncResult *result,
+                          gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+  UaDaemon *self = data->self;
+
+  g_autoptr(GError) error = NULL;
+  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
+  if (status == NULL) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to get status: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
+    return;
+  }
+
+  GPtrArray *services = ua_status_get_services(status);
+  for (guint i = 0; i < services->len; i++) {
+    UaService *service = g_ptr_array_index(services, i);
+    UaUbuntuAdvantageService *s = ua_ubuntu_advantage_service_skeleton_new();
+    ua_ubuntu_advantage_service_set_name(UA_UBUNTU_ADVANTAGE_SERVICE(s),
+                                         ua_service_get_name(service));
+    ua_ubuntu_advantage_service_set_entitled(UA_UBUNTU_ADVANTAGE_SERVICE(s),
+                                             ua_service_get_entitled(service));
+    ua_ubuntu_advantage_service_set_status(UA_UBUNTU_ADVANTAGE_SERVICE(s),
+                                           ua_service_get_status(service));
+    g_autofree gchar *path =
+        g_strdup_printf("/services/%s", ua_service_get_name(service));
+    g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(self->ua),
+                                     self->connection, path,
+                                     NULL); // FIXME: error
+  }
+
+  ua_ubuntu_advantage_complete_refresh_status(self->ua, data->invocation);
+}
+
+// Called when a client requests com.canonical.UbuntuAdvantage.RefreshStatus().
+static gboolean dbus_refresh_status_cb(UaDaemon *self,
+                                       GDBusMethodInvocation *invocation) {
+  ua_get_status(NULL, get_status_cb, callback_data_new(self, invocation));
+  return TRUE;
+}
 
 // Called when 'ua attach' completes.
 static void attach_cb(GObject *object, GAsyncResult *result,
@@ -152,6 +198,8 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
                             gpointer user_data) {
   UaDaemon *self = user_data;
 
+  self->connection = g_object_ref(connection);
+
   g_autoptr(GError) error = NULL;
   if (!g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(self->ua),
                                         connection, "/", &error)) {
@@ -171,15 +219,20 @@ static void name_lost_cb(GDBusConnection *connection, const gchar *name,
 static void ua_daemon_dispose(GObject *object) {
   UaDaemon *self = UA_DAEMON(object);
 
+  g_clear_object(&self->connection);
   g_clear_object(&self->ua);
+  g_clear_pointer(&self->services, g_object_unref);
 
   G_OBJECT_CLASS(ua_daemon_parent_class)->dispose(object);
 }
 
 static void ua_daemon_init(UaDaemon *self) {
   self->ua = ua_ubuntu_advantage_skeleton_new();
+  self->services = g_ptr_array_new_with_free_func(g_object_unref);
   ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(self->ua),
                                          PROJECT_VERSION);
+  g_signal_connect_swapped(self->ua, "handle-refresh-status",
+                           G_CALLBACK(dbus_refresh_status_cb), self);
   g_signal_connect_swapped(self->ua, "handle-attach",
                            G_CALLBACK(dbus_attach_cb), self);
   g_signal_connect_swapped(self->ua, "handle-detach",

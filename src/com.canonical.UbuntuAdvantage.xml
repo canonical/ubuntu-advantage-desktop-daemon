@@ -4,6 +4,7 @@
 
 <node name="/" xmlns:doc="http://www.freedesktop.org/dbus/1.0/doc.dtd">
   <interface name='com.canonical.UbuntuAdvantage'>
+    <method name='RefreshStatus'/>
     <method name='Attach'>
       <arg type='s' name='token' direction='in'/>
     </method>
@@ -15,5 +16,11 @@
       <arg type='s' name='service_name' direction='in'/>
     </method>
     <property name='DaemonVersion' type='s' access='read'/>
+  </interface>
+
+  <interface name='com.canonical.UbuntuAdvantage.Service'>
+    <property name='Name' type='s' access='read'/>
+    <property name='Entitled' type='s' access='read'/>
+    <property name='Status' type='s' access='read'/>
   </interface>
 </node>
