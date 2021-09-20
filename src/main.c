@@ -114,7 +114,7 @@ static gboolean dbus_disable_cb(UaUbuntuAdvantage *ua,
 static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
                             gpointer user_data) {
   g_autoptr(GError) error = NULL;
-  g_autoptr(UaUbuntuAdvantage) ua = ua_ubuntu_advantage_skeleton_new();
+  UaUbuntuAdvantage *ua = ua_ubuntu_advantage_skeleton_new();
   ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(ua),
                                          PROJECT_VERSION);
   g_signal_connect(ua, "handle-attach", G_CALLBACK(dbus_attach_cb), NULL);
