@@ -30,23 +30,46 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
                         g_object_unref);
 }
 
+// Wait for [subprocess] to complete, and return an error in [task] if it did
+// not.
+static gboolean wait_finish(GSubprocess *subprocess, GAsyncResult *result,
+                            GTask *task) {
+  g_autoptr(GError) error = NULL;
+  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
+    g_task_return_error(task, error);
+    return FALSE;
+  }
+
+  if (g_subprocess_get_successful(subprocess)) {
+    return TRUE;
+  }
+
+  if (g_subprocess_get_if_exited(subprocess)) {
+    g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED,
+                            "UA client exited with code %d",
+                            g_subprocess_get_exit_status(subprocess));
+  } else {
+    g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED,
+                            "UA client exited with signal %d",
+                            g_subprocess_get_term_sig(subprocess));
+  }
+
+  return FALSE;
+}
+
 // Called when 'ua status' process completes.
 static void ua_status_cb(GObject *object, GAsyncResult *result,
                          gpointer user_data) {
   GSubprocess *subprocess = G_SUBPROCESS(object);
   g_autoptr(GTask) task = G_TASK(user_data);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
-    return;
+  if (wait_finish(subprocess, result, task)) {
+    g_autoptr(JsonParser) parser = json_parser_new();
+    json_parser_load_from_stream_async(
+        parser, g_subprocess_get_stdout_pipe(subprocess),
+        g_task_get_cancellable(task), ua_status_parse_cb, task);
+    g_steal_pointer(&task);
   }
-
-  g_autoptr(JsonParser) parser = json_parser_new();
-  json_parser_load_from_stream_async(
-      parser, g_subprocess_get_stdout_pipe(subprocess),
-      g_task_get_cancellable(task), ua_status_parse_cb, task);
-  g_steal_pointer(&task);
 }
 
 // Called when 'ua attach' process completes.
@@ -55,13 +78,9 @@ static void ua_attach_cb(GObject *object, GAsyncResult *result,
   GSubprocess *subprocess = G_SUBPROCESS(object);
   g_autoptr(GTask) task = G_TASK(user_data);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
-    return;
+  if (wait_finish(subprocess, result, task)) {
+    g_task_return_boolean(task, TRUE);
   }
-
-  g_task_return_boolean(task, TRUE);
 }
 
 // Called when 'ua detach' process completes.
@@ -70,10 +89,8 @@ static void ua_detach_cb(GObject *object, GAsyncResult *result,
   GSubprocess *subprocess = G_SUBPROCESS(object);
   g_autoptr(GTask) task = G_TASK(user_data);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
-    return;
+  if (wait_finish(subprocess, result, task)) {
+    g_task_return_boolean(task, TRUE);
   }
 
   g_task_return_boolean(task, TRUE);
@@ -85,13 +102,9 @@ static void ua_enable_cb(GObject *object, GAsyncResult *result,
   GSubprocess *subprocess = G_SUBPROCESS(object);
   g_autoptr(GTask) task = G_TASK(user_data);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
-    return;
+  if (wait_finish(subprocess, result, task)) {
+    g_task_return_boolean(task, TRUE);
   }
-
-  g_task_return_boolean(task, TRUE);
 }
 
 // Called when 'ua disable' process completes.
@@ -100,13 +113,9 @@ static void ua_disable_cb(GObject *object, GAsyncResult *result,
   GSubprocess *subprocess = G_SUBPROCESS(object);
   g_autoptr(GTask) task = G_TASK(user_data);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
-    return;
+  if (wait_finish(subprocess, result, task)) {
+    g_task_return_boolean(task, TRUE);
   }
-
-  g_task_return_boolean(task, TRUE);
 }
 
 // Get the current status of Ubuntu Advantage.

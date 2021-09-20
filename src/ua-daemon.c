@@ -47,6 +47,11 @@ static void attach_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!ua_attach_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to attach: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
     return;
   }
 
@@ -68,6 +73,11 @@ static void detach_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!ua_detach_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to detach: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
     return;
   }
 
@@ -89,6 +99,11 @@ static void enable_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!ua_enable_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to enable service: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
     return;
   }
 
@@ -111,6 +126,11 @@ static void disable_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!ua_disable_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to disable service: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
     return;
   }
 
