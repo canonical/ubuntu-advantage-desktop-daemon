@@ -3,6 +3,7 @@
 #include "config.h"
 #include "ua-ubuntu-advantage-generated.h"
 
+// Called when a client requests com.canonical.UbuntuAdvantage.Attach().
 static gboolean attach_cb(UaUbuntuAdvantage *skeleton,
                           GDBusMethodInvocation *invocation, const gchar *token,
                           gpointer user_data) {
@@ -11,6 +12,7 @@ static gboolean attach_cb(UaUbuntuAdvantage *skeleton,
   return TRUE;
 }
 
+// Called when a client requests com.canonical.UbuntuAdvantage.Detach().
 static gboolean detach_cb(UaUbuntuAdvantage *skeleton,
                           GDBusMethodInvocation *invocation,
                           gpointer user_data) {
@@ -19,6 +21,7 @@ static gboolean detach_cb(UaUbuntuAdvantage *skeleton,
   return TRUE;
 }
 
+// Called when a client requests com.canonical.UbuntuAdvantage.Enable().
 static gboolean enable_cb(UaUbuntuAdvantage *skeleton,
                           GDBusMethodInvocation *invocation,
                           const gchar *service_name, gpointer user_data) {
@@ -27,6 +30,7 @@ static gboolean enable_cb(UaUbuntuAdvantage *skeleton,
   return TRUE;
 }
 
+// Called when a client requests com.canonical.UbuntuAdvantage.Disable().
 static gboolean disable_cb(UaUbuntuAdvantage *skeleton,
                            GDBusMethodInvocation *invocation,
                            const gchar *service_name, gpointer user_data) {
@@ -35,6 +39,7 @@ static gboolean disable_cb(UaUbuntuAdvantage *skeleton,
   return TRUE;
 }
 
+// Called when the system bus is acquired.
 static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
                             gpointer user_data) {
   g_autoptr(GError) error = NULL;
@@ -52,6 +57,8 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
   }
 }
 
+// Called when the com.canonical.UbuntuAdvantage D-Bus name is lost to another
+// client.
 static void name_lost_cb(GDBusConnection *connection, const gchar *name,
                          gpointer user_data) {
   GMainLoop *loop = user_data;

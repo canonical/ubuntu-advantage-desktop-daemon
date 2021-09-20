@@ -6,7 +6,7 @@
 
 G_DECLARE_FINAL_TYPE(UaStatus, ua_status, UA, STATUS, GObject);
 
-UaStatus *ua_status_new(gboolean attached);
+UaStatus *ua_status_new(gboolean attached, GPtrArray *services);
 
 gboolean ua_status_get_attached(UaStatus *status);
 

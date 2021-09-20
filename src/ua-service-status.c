@@ -37,16 +37,19 @@ UaServiceStatus *ua_service_status_new(const gchar *name, const gchar *entitled,
   return self;
 }
 
+// Returns the name of the Ubuntu Advantage service.
 const gchar *ua_service_status_get_name(UaServiceStatus *self) {
   g_return_val_if_fail(UA_IS_SERVICE_STATUS(self), NULL);
   return self->name;
 }
 
+// Returns the entitlement to this service.
 const gchar *ua_service_status_get_entitled(UaServiceStatus *self) {
   g_return_val_if_fail(UA_IS_SERVICE_STATUS(self), NULL);
   return self->entitled;
 }
 
+// Returns the status of this service.
 const gchar *ua_service_status_get_status(UaServiceStatus *self) {
   g_return_val_if_fail(UA_IS_SERVICE_STATUS(self), NULL);
   return self->status;
