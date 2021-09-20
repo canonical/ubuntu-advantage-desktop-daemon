@@ -138,11 +138,33 @@ static void name_lost_cb(GDBusConnection *connection, const gchar *name,
 }
 
 int main(int argc, char **argv) {
+  gboolean replace = FALSE;
+  gboolean show_version = FALSE;
+  const GOptionEntry options[] = {{"replace", 'r', 0, G_OPTION_ARG_NONE,
+                                   &replace, "Replace current daemon", NULL},
+                                  {"version", 'v', 0, G_OPTION_ARG_NONE,
+                                   &show_version, "Show daemon version", NULL},
+                                  {NULL}};
+  g_autoptr(GOptionContext) context = g_option_context_new("ua-daemon");
+  g_option_context_add_main_entries(context, options, NULL);
+  g_autoptr(GError) error = NULL;
+  if (!g_option_context_parse(context, &argc, &argv, &error)) {
+    g_printerr("Failed to parse command-line options: %s\n", error->message);
+    return EXIT_FAILURE;
+  }
+  if (show_version) {
+    g_printerr("ua-daemon %s\n", PROJECT_VERSION);
+    return EXIT_SUCCESS;
+  }
+
   g_autoptr(GMainLoop) loop = g_main_loop_new(NULL, FALSE);
 
-  g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.example.UbuntuAdvantage",
-                 G_BUS_NAME_OWNER_FLAGS_NONE, bus_acquired_cb, NULL,
-                 name_lost_cb, loop, NULL);
+  GBusNameOwnerFlags bus_flags = G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT;
+  if (replace) {
+    bus_flags |= G_BUS_NAME_OWNER_FLAGS_REPLACE;
+  }
+  g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.example.UbuntuAdvantage", bus_flags,
+                 bus_acquired_cb, NULL, name_lost_cb, loop, NULL);
 
   g_main_loop_run(loop);
 
