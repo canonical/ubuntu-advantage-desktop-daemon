@@ -8,5 +8,6 @@ project(
 gnome = import('gnome')
 
 gio_dep = dependency('gio-unix-2.0')
+json_glib_dep = dependency('json-glib-1.0')
 
 subdir('src')

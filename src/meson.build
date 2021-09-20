@@ -7,6 +7,6 @@ gdbus_src = gnome.gdbus_codegen(
 )
 
 executable('ua-daemon',
-           'main.c',
+           'main.c', 'ua-service-status.c', 'ua-status.c', 'ua-tool.c',
            gdbus_src,
-           dependencies: gio_dep)
+           dependencies: [gio_dep, json_glib_dep])
