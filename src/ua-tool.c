@@ -21,8 +21,7 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
   }
   JsonObject *status = json_node_get_object(root);
 
-  gboolean attached =
-      json_object_get_boolean_member_with_default(status, "attached", FALSE);
+  gboolean attached = json_object_get_boolean_member(status, "attached");
 
   g_task_return_pointer(task, ua_status_new(attached), g_object_unref);
 }
