@@ -10,6 +10,7 @@ struct _UaDaemon {
 
   gboolean replace;
   GDBusConnection *connection;
+  GDBusObjectManagerServer *object_manager;
   UaUbuntuAdvantage *ua;
   GPtrArray *services;
 };
@@ -108,7 +109,8 @@ static void update_status(UaDaemon *self, UaStatus *status) {
   GPtrArray *services = ua_status_get_services(status);
   for (guint i = 0; i < services->len; i++) {
     UaService *service = g_ptr_array_index(services, i);
-    UaUbuntuAdvantageService *s = ua_ubuntu_advantage_service_skeleton_new();
+    g_autoptr(UaUbuntuAdvantageService) s =
+        ua_ubuntu_advantage_service_skeleton_new();
     g_signal_connect_swapped(s, "handle-enable",
                              G_CALLBACK(dbus_service_enable_cb), self);
     g_signal_connect_swapped(s, "handle-disable",
@@ -119,11 +121,12 @@ static void update_status(UaDaemon *self, UaStatus *status) {
                                              ua_service_get_entitled(service));
     ua_ubuntu_advantage_service_set_status(UA_UBUNTU_ADVANTAGE_SERVICE(s),
                                            ua_service_get_status(service));
-    g_autofree gchar *path =
+
+    g_autofree gchar *object_path =
         g_strdup_printf("/services/%s", ua_service_get_name(service));
-    g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(self->ua),
-                                     self->connection, path,
-                                     NULL); // FIXME: error
+    g_autoptr(GDBusObjectSkeleton) o = g_dbus_object_skeleton_new(object_path);
+    g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(s));
+    g_dbus_object_manager_server_export(self->object_manager, o);
   }
 }
 
@@ -230,13 +233,11 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
   UaDaemon *self = user_data;
 
   self->connection = g_object_ref(connection);
+  g_dbus_object_manager_server_set_connection(self->object_manager, connection);
 
-  g_autoptr(GError) error = NULL;
-  if (!g_dbus_interface_skeleton_export(G_DBUS_INTERFACE_SKELETON(self->ua),
-                                        connection, "/", &error)) {
-    g_printerr("Failed to export D-Bus object: %s", error->message);
-    exit(EXIT_FAILURE);
-  }
+  g_autoptr(GDBusObjectSkeleton) o = g_dbus_object_skeleton_new("/");
+  g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(self->ua));
+  g_dbus_object_manager_server_export(self->object_manager, o);
 }
 
 // Called when the com.canonical.UbuntuAdvantage D-Bus name is lost to another
@@ -251,6 +252,7 @@ static void ua_daemon_dispose(GObject *object) {
   UaDaemon *self = UA_DAEMON(object);
 
   g_clear_object(&self->connection);
+  g_clear_object(&self->object_manager);
   g_clear_object(&self->ua);
   g_clear_pointer(&self->services, g_object_unref);
 
@@ -258,6 +260,7 @@ static void ua_daemon_dispose(GObject *object) {
 }
 
 static void ua_daemon_init(UaDaemon *self) {
+  self->object_manager = g_dbus_object_manager_server_new("/");
   self->ua = ua_ubuntu_advantage_skeleton_new();
   self->services = g_ptr_array_new_with_free_func(g_object_unref);
   ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(self->ua),
