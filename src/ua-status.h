@@ -2,7 +2,7 @@
 
 #include <glib-object.h>
 
-#include "ua-service-status.h"
+#include "ua-service.h"
 
 G_DECLARE_FINAL_TYPE(UaStatus, ua_status, UA, STATUS, GObject)
 

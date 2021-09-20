@@ -12,7 +12,7 @@ configure_file(output: 'config.h',
                configuration: conf)
 
 executable('ua-daemon',
-           'main.c', 'ua-daemon.c', 'ua-service-status.c', 'ua-status.c', 'ua-tool.c',
+           'main.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-tool.c',
            gdbus_src,
            dependencies: [gio_dep, json_glib_dep],
            install: true,
