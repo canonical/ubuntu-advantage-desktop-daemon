@@ -6,6 +6,11 @@ gdbus_src = gnome.gdbus_codegen(
   autocleanup: 'all'
 )
 
+conf = configuration_data()
+conf.set_quoted('PROJECT_VERSION', meson.project_version())
+configure_file(output: 'config.h',
+               configuration: conf)
+
 executable('ua-daemon',
            'main.c', 'ua-service-status.c', 'ua-status.c', 'ua-tool.c',
            gdbus_src,

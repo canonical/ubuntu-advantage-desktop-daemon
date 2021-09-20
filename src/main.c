@@ -1,5 +1,6 @@
 #include <gio/gio.h>
 
+#include "config.h"
 #include "ua-ubuntu-advantage-generated.h"
 
 static gboolean ua_ubuntu_advantage_attach(UaUbuntuAdvantage *skeleton,
@@ -41,6 +42,8 @@ static void on_bus_acquired(GDBusConnection *connection, const gchar *name,
                             gpointer user_data) {
   g_autoptr(GError) error = NULL;
   g_autoptr(UaUbuntuAdvantage) ua = ua_ubuntu_advantage_skeleton_new();
+  ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(ua),
+                                         PROJECT_VERSION);
   g_signal_connect(ua, "handle-attach", G_CALLBACK(ua_ubuntu_advantage_attach),
                    NULL);
   g_signal_connect(ua, "handle-detach", G_CALLBACK(ua_ubuntu_advantage_detach),

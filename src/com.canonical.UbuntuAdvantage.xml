@@ -14,5 +14,6 @@
     <method name='Disable'>
       <arg type='s' name='service_name' direction='in'/>
     </method>
+    <property name='DaemonVersion' type='s' access='read'/>
   </interface>
 </node>
