@@ -22,24 +22,83 @@ static guint signals[SIGNAL_LAST] = {0};
 
 typedef struct {
   UaDaemon *self;
+  UaUbuntuAdvantageService *service;
   GDBusMethodInvocation *invocation;
 } CallbackData;
 
 static CallbackData *callback_data_new(UaDaemon *self,
+                                       UaUbuntuAdvantageService *service,
                                        GDBusMethodInvocation *invocation) {
   CallbackData *data = g_new0(CallbackData, 1);
   data->self = self;
+  data->service = service != NULL ? g_object_ref(service) : NULL;
   data->invocation = g_object_ref(invocation);
 
   return data;
 }
 
 static void callback_data_free(CallbackData *data) {
+  g_clear_object(&data->service);
   g_clear_object(&data->invocation);
   g_free(data);
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(CallbackData, callback_data_free)
+
+// Called when 'ua enable' completes.
+static void enable_cb(GObject *object, GAsyncResult *result,
+                      gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_enable_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to enable service: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
+    return;
+  }
+
+  ua_ubuntu_advantage_service_complete_enable(data->service, data->invocation);
+}
+
+// Called when a client requests com.canonical.UbuntuAdvantage.Service.Enable().
+static gboolean dbus_service_enable_cb(UaDaemon *self,
+                                       GDBusMethodInvocation *invocation,
+                                       UaUbuntuAdvantageService *service) {
+  ua_enable(ua_ubuntu_advantage_service_get_name(service), NULL, enable_cb,
+            callback_data_new(self, service, invocation));
+  return TRUE;
+}
+
+// Called when 'ua disable' completes.
+static void disable_cb(GObject *object, GAsyncResult *result,
+                       gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_disable_finish(result, &error)) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to disable service: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
+    return;
+  }
+
+  ua_ubuntu_advantage_service_complete_disable(data->service, data->invocation);
+}
+
+// Called when a client requests
+// com.canonical.UbuntuAdvantage.Service.Disable().
+static gboolean dbus_service_disable_cb(UaDaemon *self,
+                                        GDBusMethodInvocation *invocation,
+                                        UaUbuntuAdvantageService *service) {
+  ua_disable(ua_ubuntu_advantage_service_get_name(service), NULL, disable_cb,
+             callback_data_new(self, service, invocation));
+  return TRUE;
+}
 
 // Update D-Bus interface from [status].
 static void update_status(UaDaemon *self, UaStatus *status) {
@@ -50,6 +109,10 @@ static void update_status(UaDaemon *self, UaStatus *status) {
   for (guint i = 0; i < services->len; i++) {
     UaService *service = g_ptr_array_index(services, i);
     UaUbuntuAdvantageService *s = ua_ubuntu_advantage_service_skeleton_new();
+    g_signal_connect_swapped(s, "handle-enable",
+                             G_CALLBACK(dbus_service_enable_cb), self);
+    g_signal_connect_swapped(s, "handle-disable",
+                             G_CALLBACK(dbus_service_disable_cb), self);
     ua_ubuntu_advantage_service_set_name(UA_UBUNTU_ADVANTAGE_SERVICE(s),
                                          ua_service_get_name(service));
     ua_ubuntu_advantage_service_set_entitled(UA_UBUNTU_ADVANTAGE_SERVICE(s),
@@ -104,7 +167,7 @@ static void get_initial_status_cb(GObject *object, GAsyncResult *result,
 // Called when a client requests com.canonical.UbuntuAdvantage.RefreshStatus().
 static gboolean dbus_refresh_status_cb(UaDaemon *self,
                                        GDBusMethodInvocation *invocation) {
-  ua_get_status(NULL, get_status_cb, callback_data_new(self, invocation));
+  ua_get_status(NULL, get_status_cb, callback_data_new(self, NULL, invocation));
   return TRUE;
 }
 
@@ -131,7 +194,7 @@ static void attach_cb(GObject *object, GAsyncResult *result,
 static gboolean dbus_attach_cb(UaDaemon *self,
                                GDBusMethodInvocation *invocation,
                                const gchar *token) {
-  ua_attach(token, NULL, attach_cb, callback_data_new(self, invocation));
+  ua_attach(token, NULL, attach_cb, callback_data_new(self, NULL, invocation));
   return TRUE;
 }
 
@@ -157,62 +220,7 @@ static void detach_cb(GObject *object, GAsyncResult *result,
 // Called when a client requests com.canonical.UbuntuAdvantage.Detach().
 static gboolean dbus_detach_cb(UaDaemon *self,
                                GDBusMethodInvocation *invocation) {
-  ua_detach(NULL, detach_cb, callback_data_new(self, invocation));
-  return TRUE;
-}
-
-// Called when 'ua enable' completes.
-static void enable_cb(GObject *object, GAsyncResult *result,
-                      gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
-  UaDaemon *self = data->self;
-
-  g_autoptr(GError) error = NULL;
-  if (!ua_enable_finish(result, &error)) {
-    g_autofree gchar *error_message =
-        g_strdup_printf("Failed to enable service: %s", error->message);
-    g_dbus_method_invocation_return_dbus_error(
-        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
-        error_message);
-    return;
-  }
-
-  ua_ubuntu_advantage_complete_enable(self->ua, data->invocation);
-}
-
-// Called when a client requests com.canonical.UbuntuAdvantage.Enable().
-static gboolean dbus_enable_cb(UaDaemon *self,
-                               GDBusMethodInvocation *invocation,
-                               const gchar *service_name) {
-  ua_enable(service_name, NULL, enable_cb, callback_data_new(self, invocation));
-  return TRUE;
-}
-
-// Called when 'ua disable' completes.
-static void disable_cb(GObject *object, GAsyncResult *result,
-                       gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
-  UaDaemon *self = data->self;
-
-  g_autoptr(GError) error = NULL;
-  if (!ua_disable_finish(result, &error)) {
-    g_autofree gchar *error_message =
-        g_strdup_printf("Failed to disable service: %s", error->message);
-    g_dbus_method_invocation_return_dbus_error(
-        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
-        error_message);
-    return;
-  }
-
-  ua_ubuntu_advantage_complete_disable(self->ua, data->invocation);
-}
-
-// Called when a client requests com.canonical.UbuntuAdvantage.Disable().
-static gboolean dbus_disable_cb(UaDaemon *self,
-                                GDBusMethodInvocation *invocation,
-                                const gchar *service_name) {
-  ua_disable(service_name, NULL, disable_cb,
-             callback_data_new(self, invocation));
+  ua_detach(NULL, detach_cb, callback_data_new(self, NULL, invocation));
   return TRUE;
 }
 
@@ -260,10 +268,6 @@ static void ua_daemon_init(UaDaemon *self) {
                            G_CALLBACK(dbus_attach_cb), self);
   g_signal_connect_swapped(self->ua, "handle-detach",
                            G_CALLBACK(dbus_detach_cb), self);
-  g_signal_connect_swapped(self->ua, "handle-enable",
-                           G_CALLBACK(dbus_enable_cb), self);
-  g_signal_connect_swapped(self->ua, "handle-disable",
-                           G_CALLBACK(dbus_disable_cb), self);
 }
 
 static void ua_daemon_class_init(UaDaemonClass *klass) {
