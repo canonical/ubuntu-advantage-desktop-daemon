@@ -41,22 +41,10 @@ static void callback_data_free(CallbackData *data) {
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(CallbackData, callback_data_free)
 
-// Called when 'ua status' completes.
-static void get_status_cb(GObject *object, GAsyncResult *result,
-                          gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
-  UaDaemon *self = data->self;
-
-  g_autoptr(GError) error = NULL;
-  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
-  if (status == NULL) {
-    g_autofree gchar *error_message =
-        g_strdup_printf("Failed to get status: %s", error->message);
-    g_dbus_method_invocation_return_dbus_error(
-        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
-        error_message);
-    return;
-  }
+// Update D-Bus interface from [status].
+static void update_status(UaDaemon *self, UaStatus *status) {
+  ua_ubuntu_advantage_set_attached(UA_UBUNTU_ADVANTAGE(self->ua),
+                                   ua_status_get_attached(status));
 
   GPtrArray *services = ua_status_get_services(status);
   for (guint i = 0; i < services->len; i++) {
@@ -74,8 +62,43 @@ static void get_status_cb(GObject *object, GAsyncResult *result,
                                      self->connection, path,
                                      NULL); // FIXME: error
   }
+}
+
+// Called when 'ua status' completes.
+static void get_status_cb(GObject *object, GAsyncResult *result,
+                          gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+  UaDaemon *self = data->self;
+
+  g_autoptr(GError) error = NULL;
+  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
+  if (status == NULL) {
+    g_autofree gchar *error_message =
+        g_strdup_printf("Failed to get status: %s", error->message);
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
+        error_message);
+    return;
+  }
+
+  update_status(self, status);
 
   ua_ubuntu_advantage_complete_refresh_status(self->ua, data->invocation);
+}
+
+// Called when startup run of 'ua status' completes.
+static void get_initial_status_cb(GObject *object, GAsyncResult *result,
+                                  gpointer user_data) {
+  UaDaemon *self = user_data;
+
+  g_autoptr(GError) error = NULL;
+  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
+  if (status == NULL) {
+    g_warning("Failed to get initial status: %s", error->message);
+    return;
+  }
+
+  update_status(self, status);
 }
 
 // Called when a client requests com.canonical.UbuntuAdvantage.RefreshStatus().
@@ -266,5 +289,8 @@ gboolean ua_daemon_start(UaDaemon *self, GError **error) {
   }
   g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.canonical.UbuntuAdvantage", bus_flags,
                  bus_acquired_cb, NULL, name_lost_cb, self, NULL);
+
+  ua_get_status(NULL, get_initial_status_cb, self);
+
   return TRUE;
 }
