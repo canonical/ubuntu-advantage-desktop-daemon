@@ -59,8 +59,9 @@ static void attach_cb(GObject *object, GAsyncResult *result,
 }
 
 // Called when a client requests com.canonical.UbuntuAdvantage.Attach().
-static gboolean dbus_attach_cb(UaDaemon *self, const gchar *token,
-                               GDBusMethodInvocation *invocation) {
+static gboolean dbus_attach_cb(UaDaemon *self,
+                               GDBusMethodInvocation *invocation,
+                               const gchar *token) {
   ua_attach(token, NULL, attach_cb, callback_data_new(self, invocation));
   return TRUE;
 }
