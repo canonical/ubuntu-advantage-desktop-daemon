@@ -11,6 +11,7 @@
     <method name='Detach'/>
     <property name='Attached' type='b' access='read'/>
     <property name='DaemonVersion' type='s' access='read'/>
+    <property name='LastRefresh' type='s' access='read'/>
   </interface>
 
   <interface name='com.canonical.UbuntuAdvantage.Service'>

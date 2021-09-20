@@ -128,6 +128,12 @@ static void update_status(UaDaemon *self, UaStatus *status) {
     g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(s));
     g_dbus_object_manager_server_export(self->object_manager, o);
   }
+
+  g_autoptr(GDateTime) now = g_date_time_new_now_utc();
+  g_autofree gchar *last_refresh =
+      g_date_time_format(now, "%Y-%m-%dT%H:%M:%SZ");
+  ua_ubuntu_advantage_set_last_refresh(UA_UBUNTU_ADVANTAGE(self->ua),
+                                       last_refresh);
 }
 
 // Called when 'ua status' completes.
