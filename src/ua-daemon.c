@@ -101,6 +101,20 @@ static gboolean dbus_service_disable_cb(UaDaemon *self,
   return TRUE;
 }
 
+// Escape [s] so that it can be used in a D-Bus object path.
+// This implements g_dbus_escape_object_path, which requires glib 2.68
+static gchar *escape_object_path(const gchar *s) {
+  GString *escaped = g_string_new("");
+  for (const gchar *c = s; *c != '\0'; c++) {
+    if (g_ascii_isalnum(*c)) {
+      g_string_append_c(escaped, *c);
+    } else {
+      g_string_append_printf(escaped, "_%02x", *c);
+    }
+  }
+  return g_string_free(escaped, FALSE);
+}
+
 // Update D-Bus interface from [status].
 static void update_status(UaDaemon *self, UaStatus *status) {
   ua_ubuntu_advantage_set_attached(UA_UBUNTU_ADVANTAGE(self->ua),
@@ -125,7 +139,7 @@ static void update_status(UaDaemon *self, UaStatus *status) {
                                            ua_service_get_status(service));
 
     g_autofree gchar *escaped_name =
-        g_dbus_escape_object_path(ua_service_get_name(service));
+        escape_object_path(ua_service_get_name(service));
     g_autofree gchar *object_path =
         g_strdup_printf("/Services/%s", escaped_name);
 
