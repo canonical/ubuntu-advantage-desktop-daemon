@@ -20,7 +20,7 @@ jobs:
           if [ $passed = false ]; then exit 1; fi
 
       - name: Install dependencies
-        run: sudo apt-get install libglib2.0-dev meson ninja-build
+        run: sudo apt-get install libglib2.0-dev libjson-glib-dev meson ninja-build
 
       - name: Meson
         run: meson _build
