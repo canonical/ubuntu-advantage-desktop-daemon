@@ -260,7 +260,7 @@ static void ua_daemon_dispose(GObject *object) {
   g_clear_object(&self->connection);
   g_clear_object(&self->object_manager);
   g_clear_object(&self->ua);
-  g_clear_pointer(&self->services, g_object_unref);
+  g_clear_pointer(&self->services, g_ptr_array_unref);
 
   G_OBJECT_CLASS(ua_daemon_parent_class)->dispose(object);
 }
