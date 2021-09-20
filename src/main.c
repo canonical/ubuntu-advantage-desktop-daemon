@@ -162,7 +162,7 @@ int main(int argc, char **argv) {
   if (replace) {
     bus_flags |= G_BUS_NAME_OWNER_FLAGS_REPLACE;
   }
-  g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.example.UbuntuAdvantage", bus_flags,
+  g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.canonical.UbuntuAdvantage", bus_flags,
                  bus_acquired_cb, NULL, name_lost_cb, loop, NULL);
 
   g_main_loop_run(loop);
