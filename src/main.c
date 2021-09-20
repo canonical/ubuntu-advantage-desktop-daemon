@@ -129,11 +129,10 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
 }
 
 // Called when the com.canonical.UbuntuAdvantage D-Bus name is lost to another
-// client.
+// client or failed to acquire it.
 static void name_lost_cb(GDBusConnection *connection, const gchar *name,
                          gpointer user_data) {
   GMainLoop *loop = user_data;
-
   g_main_loop_quit(loop);
 }
 
