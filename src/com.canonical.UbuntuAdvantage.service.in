@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.canonical.UbuntuAdvantage
+Exec=@libexecdir@/ua-daemon
+User=root

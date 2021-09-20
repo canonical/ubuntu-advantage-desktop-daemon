@@ -9,4 +9,21 @@ gdbus_src = gnome.gdbus_codegen(
 executable('ua-daemon',
            'main.c', 'ua-service-status.c', 'ua-status.c', 'ua-tool.c',
            gdbus_src,
-           dependencies: [gio_dep, json_glib_dep])
+           dependencies: [gio_dep, json_glib_dep],
+           install: true,
+           install_dir: libexecdir)
+
+# D-Bus service
+service_conf = configuration_data()
+service_conf.set('libexecdir', libexecdir)
+configure_file(input: 'com.canonical.UbuntuAdvantage.service.in',
+               output: 'com.canonical.UbuntuAdvantage.service',
+               configuration: service_conf,
+               install: true,
+               install_dir: join_paths(dbus_datadir, 'system-services'))
+
+# D-Bus configuration
+install_data('com.canonical.UbuntuAdvantage.conf', install_dir: join_paths(dbus_datadir, 'system.d'))
+
+# D-Bus interface
+install_data('com.canonical.UbuntuAdvantage.xml', install_dir: join_paths(dbus_datadir, 'interfaces'))

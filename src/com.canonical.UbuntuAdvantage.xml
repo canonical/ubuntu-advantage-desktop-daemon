@@ -8,5 +8,11 @@
       <arg type='s' name='token' direction='in'/>
     </method>
     <method name='Detach'/>
+    <method name='Enable'>
+      <arg type='s' name='service_name' direction='in'/>
+    </method>
+    <method name='Disable'>
+      <arg type='s' name='service_name' direction='in'/>
+    </method>
   </interface>
 </node>
