@@ -115,36 +115,72 @@ static gchar *escape_object_path(const gchar *s) {
   return g_string_free(escaped, FALSE);
 }
 
+// Get the D-Bus object path for a UA service with name [service_name].
+static gchar *get_service_object_path(const gchar *service_name) {
+  g_autofree gchar *escaped_name = escape_object_path(service_name);
+  return g_strdup_printf("/Services/%s", escaped_name);
+}
+
+// Update fields in [dbus_service] from [service].
+static void update_service(UaUbuntuAdvantageService *dbus_service,
+                           UaService *service) {
+  ua_ubuntu_advantage_service_set_name(dbus_service,
+                                       ua_service_get_name(service));
+  ua_ubuntu_advantage_service_set_entitled(dbus_service,
+                                           ua_service_get_entitled(service));
+  ua_ubuntu_advantage_service_set_status(dbus_service,
+                                         ua_service_get_status(service));
+}
+
 // Update D-Bus interface from [status].
 static void update_status(UaDaemon *self, UaStatus *status) {
   ua_ubuntu_advantage_set_attached(UA_UBUNTU_ADVANTAGE(self->ua),
                                    ua_status_get_attached(status));
 
+  // Update existing services or remove them.
+  g_autoptr(GPtrArray) existing_services =
+      g_ptr_array_new_with_free_func(g_object_unref);
+  for (guint i = 0; i < self->services->len; i++) {
+    UaUbuntuAdvantageService *dbus_service =
+        g_ptr_array_index(self->services, i);
+    const gchar *service_name =
+        ua_ubuntu_advantage_service_get_name(dbus_service);
+    UaService *service = ua_status_get_service(status, service_name);
+    if (service != NULL) {
+      update_service(dbus_service, service);
+      g_ptr_array_add(existing_services, g_object_ref(dbus_service));
+    } else {
+      g_autofree gchar *object_path = get_service_object_path(service_name);
+      g_dbus_object_manager_server_unexport(self->object_manager, object_path);
+    }
+  }
+  g_ptr_array_unref(self->services);
+  self->services = g_steal_pointer(&existing_services);
+
+  // Add new services.
   GPtrArray *services = ua_status_get_services(status);
   for (guint i = 0; i < services->len; i++) {
     UaService *service = g_ptr_array_index(services, i);
+    const gchar *service_name = ua_service_get_name(service);
+    g_autofree gchar *object_path = get_service_object_path(service_name);
 
-    g_autoptr(UaUbuntuAdvantageService) s =
+    if (g_dbus_object_manager_get_object(
+            G_DBUS_OBJECT_MANAGER(self->object_manager), object_path) != NULL) {
+      continue;
+    }
+
+    g_autoptr(UaUbuntuAdvantageService) dbus_service =
         ua_ubuntu_advantage_service_skeleton_new();
-    g_ptr_array_add(self->services, g_object_ref(s));
-    g_signal_connect_swapped(s, "handle-enable",
+    g_ptr_array_add(self->services, g_object_ref(dbus_service));
+    g_signal_connect_swapped(dbus_service, "handle-enable",
                              G_CALLBACK(dbus_service_enable_cb), self);
-    g_signal_connect_swapped(s, "handle-disable",
+    g_signal_connect_swapped(dbus_service, "handle-disable",
                              G_CALLBACK(dbus_service_disable_cb), self);
-    ua_ubuntu_advantage_service_set_name(UA_UBUNTU_ADVANTAGE_SERVICE(s),
-                                         ua_service_get_name(service));
-    ua_ubuntu_advantage_service_set_entitled(UA_UBUNTU_ADVANTAGE_SERVICE(s),
-                                             ua_service_get_entitled(service));
-    ua_ubuntu_advantage_service_set_status(UA_UBUNTU_ADVANTAGE_SERVICE(s),
-                                           ua_service_get_status(service));
-
-    g_autofree gchar *escaped_name =
-        escape_object_path(ua_service_get_name(service));
-    g_autofree gchar *object_path =
-        g_strdup_printf("/Services/%s", escaped_name);
+    update_service(dbus_service, service);
 
     g_autoptr(GDBusObjectSkeleton) o = g_dbus_object_skeleton_new(object_path);
-    g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(s));
+    g_dbus_object_skeleton_add_interface(
+        o, G_DBUS_INTERFACE_SKELETON(dbus_service));
     g_dbus_object_manager_server_export(self->object_manager, o);
   }
 

@@ -11,3 +11,5 @@ UaStatus *ua_status_new(gboolean attached, GPtrArray *services);
 gboolean ua_status_get_attached(UaStatus *status);
 
 GPtrArray *ua_status_get_services(UaStatus *status);
+
+UaService *ua_status_get_service(UaStatus *status, const gchar *name);

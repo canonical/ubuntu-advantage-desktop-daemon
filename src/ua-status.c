@@ -43,3 +43,17 @@ GPtrArray *ua_status_get_services(UaStatus *self) {
   g_return_val_if_fail(UA_IS_STATUS(self), NULL);
   return self->services;
 }
+
+// Gets the Ubuntu Advantage services with [name].
+UaService *ua_status_get_service(UaStatus *self, const gchar *name) {
+  g_return_val_if_fail(UA_IS_STATUS(self), NULL);
+
+  for (guint i = 0; i < self->services->len; i++) {
+    UaService *service = g_ptr_array_index(self->services, i);
+    if (g_strcmp0(ua_service_get_name(service), name) == 0) {
+      return service;
+    }
+  }
+
+  return NULL;
+}
