@@ -1,6 +1,7 @@
 #include <gio/gio.h>
 
 #include "config.h"
+#include "ua-authorization.h"
 #include "ua-daemon.h"
 #include "ua-tool.h"
 #include "ua-ubuntu-advantage-generated.h"
@@ -23,33 +24,58 @@ static guint signals[SIGNAL_LAST] = {0};
 
 typedef struct {
   UaDaemon *self;
-  UaUbuntuAdvantageService *service;
   GDBusMethodInvocation *invocation;
+  gchar *token;
 } CallbackData;
 
 static CallbackData *callback_data_new(UaDaemon *self,
-                                       UaUbuntuAdvantageService *service,
-                                       GDBusMethodInvocation *invocation) {
+                                       GDBusMethodInvocation *invocation,
+                                       const gchar *token) {
   CallbackData *data = g_new0(CallbackData, 1);
   data->self = self;
-  data->service = service != NULL ? g_object_ref(service) : NULL;
   data->invocation = g_object_ref(invocation);
+  data->token = g_strdup(token);
 
   return data;
 }
 
 static void callback_data_free(CallbackData *data) {
-  g_clear_object(&data->service);
   g_clear_object(&data->invocation);
+  g_clear_pointer(&data->token, g_free);
   g_free(data);
 }
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(CallbackData, callback_data_free)
 
+typedef struct {
+  UaDaemon *self;
+  GDBusMethodInvocation *invocation;
+  UaUbuntuAdvantageService *service;
+} ServiceCallbackData;
+
+static ServiceCallbackData *
+service_callback_data_new(UaDaemon *self, GDBusMethodInvocation *invocation,
+                          UaUbuntuAdvantageService *service) {
+  ServiceCallbackData *data = g_new0(ServiceCallbackData, 1);
+  data->self = self;
+  data->invocation = g_object_ref(invocation);
+  data->service = g_object_ref(service);
+
+  return data;
+}
+
+static void service_callback_data_free(ServiceCallbackData *data) {
+  g_clear_object(&data->invocation);
+  g_clear_object(&data->service);
+  g_free(data);
+}
+
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(ServiceCallbackData, service_callback_data_free)
+
 // Called when 'ua enable' completes.
 static void enable_cb(GObject *object, GAsyncResult *result,
                       gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
+  g_autoptr(ServiceCallbackData) data = user_data;
 
   g_autoptr(GError) error = NULL;
   if (!ua_enable_finish(result, &error)) {
@@ -64,19 +90,39 @@ static void enable_cb(GObject *object, GAsyncResult *result,
   ua_ubuntu_advantage_service_complete_enable(data->service, data->invocation);
 }
 
+// Called when result of checking authorization for service enablement
+// completes.
+static void auth_service_enable_cb(GObject *object, GAsyncResult *result,
+                                   gpointer user_data) {
+  g_autoptr(ServiceCallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_check_authorization_finish(result, &error)) {
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
+        error->message);
+    return;
+  }
+
+  ua_enable(ua_ubuntu_advantage_service_get_name(data->service), NULL,
+            enable_cb, data);
+  g_steal_pointer(&data);
+}
+
 // Called when a client requests com.canonical.UbuntuAdvantage.Service.Enable().
 static gboolean dbus_service_enable_cb(UaDaemon *self,
                                        GDBusMethodInvocation *invocation,
                                        UaUbuntuAdvantageService *service) {
-  ua_enable(ua_ubuntu_advantage_service_get_name(service), NULL, enable_cb,
-            callback_data_new(self, service, invocation));
+  ua_check_authorization("com.canonical.UbuntuAdvantage.enable-service",
+                         invocation, NULL, auth_service_enable_cb,
+                         service_callback_data_new(self, invocation, service));
   return TRUE;
 }
 
 // Called when 'ua disable' completes.
 static void disable_cb(GObject *object, GAsyncResult *result,
                        gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
+  g_autoptr(ServiceCallbackData) data = user_data;
 
   g_autoptr(GError) error = NULL;
   if (!ua_disable_finish(result, &error)) {
@@ -91,13 +137,33 @@ static void disable_cb(GObject *object, GAsyncResult *result,
   ua_ubuntu_advantage_service_complete_disable(data->service, data->invocation);
 }
 
+// Called when result of checking authorization for service disablement
+// completes.
+static void auth_service_disable_cb(GObject *object, GAsyncResult *result,
+                                    gpointer user_data) {
+  g_autoptr(ServiceCallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_check_authorization_finish(result, &error)) {
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
+        error->message);
+    return;
+  }
+
+  ua_disable(ua_ubuntu_advantage_service_get_name(data->service), NULL,
+             disable_cb, data);
+  g_steal_pointer(&data);
+}
+
 // Called when a client requests
 // com.canonical.UbuntuAdvantage.Service.Disable().
 static gboolean dbus_service_disable_cb(UaDaemon *self,
                                         GDBusMethodInvocation *invocation,
                                         UaUbuntuAdvantageService *service) {
-  ua_disable(ua_ubuntu_advantage_service_get_name(service), NULL, disable_cb,
-             callback_data_new(self, service, invocation));
+  ua_check_authorization("com.canonical.UbuntuAdvantage.disable-service",
+                         invocation, NULL, auth_service_disable_cb,
+                         service_callback_data_new(self, invocation, service));
   return TRUE;
 }
 
@@ -229,10 +295,28 @@ static void get_initial_status_cb(GObject *object, GAsyncResult *result,
   update_status(self, status);
 }
 
+// Called when result of checking authorization for refreshing status completes.
+static void auth_refresh_status_cb(GObject *object, GAsyncResult *result,
+                                   gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_check_authorization_finish(result, &error)) {
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
+        error->message);
+    return;
+  }
+
+  ua_get_status(NULL, get_status_cb, g_steal_pointer(&data));
+}
+
 // Called when a client requests com.canonical.UbuntuAdvantage.RefreshStatus().
 static gboolean dbus_refresh_status_cb(UaDaemon *self,
                                        GDBusMethodInvocation *invocation) {
-  ua_get_status(NULL, get_status_cb, callback_data_new(self, NULL, invocation));
+  ua_check_authorization("com.canonical.UbuntuAdvantage.refresh-status",
+                         invocation, NULL, auth_refresh_status_cb,
+                         callback_data_new(self, invocation, NULL));
   return TRUE;
 }
 
@@ -255,11 +339,30 @@ static void attach_cb(GObject *object, GAsyncResult *result,
   ua_ubuntu_advantage_complete_attach(self->ua, data->invocation);
 }
 
+// Called when result of checking authorization for attach completes.
+static void auth_attach_cb(GObject *object, GAsyncResult *result,
+                           gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_check_authorization_finish(result, &error)) {
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
+        error->message);
+    return;
+  }
+
+  ua_attach(data->token, NULL, attach_cb, data);
+  g_steal_pointer(&data);
+}
+
 // Called when a client requests com.canonical.UbuntuAdvantage.Attach().
 static gboolean dbus_attach_cb(UaDaemon *self,
                                GDBusMethodInvocation *invocation,
                                const gchar *token) {
-  ua_attach(token, NULL, attach_cb, callback_data_new(self, NULL, invocation));
+  ua_check_authorization("com.canonical.UbuntuAdvantage.attach", invocation,
+                         NULL, auth_attach_cb,
+                         callback_data_new(self, invocation, token));
   return TRUE;
 }
 
@@ -282,10 +385,28 @@ static void detach_cb(GObject *object, GAsyncResult *result,
   ua_ubuntu_advantage_complete_detach(self->ua, data->invocation);
 }
 
+// Called when result of checking authorization for detach completes.
+static void auth_detach_cb(GObject *object, GAsyncResult *result,
+                           gpointer user_data) {
+  g_autoptr(CallbackData) data = user_data;
+
+  g_autoptr(GError) error = NULL;
+  if (!ua_check_authorization_finish(result, &error)) {
+    g_dbus_method_invocation_return_dbus_error(
+        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
+        error->message);
+    return;
+  }
+
+  ua_detach(NULL, detach_cb, g_steal_pointer(&data));
+}
+
 // Called when a client requests com.canonical.UbuntuAdvantage.Detach().
 static gboolean dbus_detach_cb(UaDaemon *self,
                                GDBusMethodInvocation *invocation) {
-  ua_detach(NULL, detach_cb, callback_data_new(self, NULL, invocation));
+  ua_check_authorization("com.canonical.UbuntuAdvantage.detach", invocation,
+                         NULL, auth_detach_cb,
+                         callback_data_new(self, invocation, NULL));
   return TRUE;
 }
 

@@ -1,3 +1,6 @@
+#include <glib/gi18n.h>
+#include <locale.h>
+
 #include "config.h"
 #include "ua-daemon.h"
 
@@ -6,12 +9,16 @@ static void quit_cb(UaDaemon *daemon, GMainLoop *loop) {
 }
 
 int main(int argc, char **argv) {
+  setlocale(LC_ALL, "");
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+
   gboolean replace = FALSE;
   gboolean show_version = FALSE;
   const GOptionEntry options[] = {{"replace", 'r', 0, G_OPTION_ARG_NONE,
-                                   &replace, "Replace current daemon", NULL},
+                                   &replace, _("Replace current daemon"), NULL},
                                   {"version", 'v', 0, G_OPTION_ARG_NONE,
-                                   &show_version, "Show daemon version", NULL},
+                                   &show_version, _("Show daemon version"),
+                                   NULL},
                                   {NULL}};
   g_autoptr(GOptionContext) context = g_option_context_new("ua-daemon");
   g_option_context_add_main_entries(context, options, NULL);

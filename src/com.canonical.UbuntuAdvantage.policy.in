@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+  <vendor>Canonical Ltd</vendor>
+  <vendor_url>https://ubuntu.com/advantage</vendor_url>
+
+  <action id="com.canonical.UbuntuAdvantage.refresh-status">
+    <description>Refresh status of Ubuntu Advantage services</description>
+    <message>Authentication is required to refresh status of Ubuntu Advantage services</message>
+    <defaults>
+      <allow_any>yes</allow_any>
+      <allow_inactive>yes</allow_inactive>
+      <allow_active>yes</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.canonical.UbuntuAdvantage.attach">
+    <description>Attach machine to Ubuntu Advantage</description>
+    <message>Authentication is required to attach this machine to Ubuntu Advantage</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.canonical.UbuntuAdvantage.detach">
+    <description>Attach machine from Ubuntu Advantage</description>
+    <message>Authentication is required to detach this machine from Ubuntu Advantage</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.canonical.UbuntuAdvantage.enable-service">
+    <description>Enable Ubuntu Advantage service</description>
+    <message>Authentication is required to enable an Ubuntu Advantage service</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+
+  <action id="com.canonical.UbuntuAdvantage.disable-service">
+    <description>Disable Ubuntu Advantage service</description>
+    <message>Authentication is required to disable an Ubuntu Advantage service</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+  </action>
+</policyconfig>

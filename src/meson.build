@@ -7,14 +7,15 @@ gdbus_src = gnome.gdbus_codegen(
 )
 
 conf = configuration_data()
+conf.set_quoted('GETTEXT_PACKAGE', 'ua-daemon')
 conf.set_quoted('PROJECT_VERSION', meson.project_version())
 configure_file(output: 'config.h',
                configuration: conf)
 
 executable('ua-daemon',
-           'main.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-tool.c',
+           'main.c', 'ua-authorization.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-tool.c',
            gdbus_src,
-           dependencies: [gio_dep, json_glib_dep],
+           dependencies: [gio_dep, json_glib_dep, polkit_gobject_dep],
            install: true,
            install_dir: libexecdir)
 
@@ -32,3 +33,13 @@ install_data('com.canonical.UbuntuAdvantage.conf', install_dir: join_paths(dbus_
 
 # D-Bus interface
 install_data('com.canonical.UbuntuAdvantage.xml', install_dir: join_paths(dbus_datadir, 'interfaces'))
+
+# Polkit policy
+i18n.merge_file(
+  'polkit policy',
+  input: 'com.canonical.UbuntuAdvantage.policy.in',
+  output: 'com.canonical.UbuntuAdvantage.policy',
+  po_dir: po_dir,
+  install: true,
+  install_dir: policy_dir,
+)

@@ -1,0 +1,3 @@
+# List of source files which contain translatable strings.
+data/com.canonical.UbuntuAdvantage.policy.in
+src/main.c
