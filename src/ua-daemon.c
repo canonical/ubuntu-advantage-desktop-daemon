@@ -118,7 +118,8 @@ static gchar *escape_object_path(const gchar *s) {
 // Get the D-Bus object path for a UA service with name [service_name].
 static gchar *get_service_object_path(const gchar *service_name) {
   g_autofree gchar *escaped_name = escape_object_path(service_name);
-  return g_strdup_printf("/Services/%s", escaped_name);
+  return g_strdup_printf("/com/canonical/UbuntuAdvantage/Services/%s",
+                         escaped_name);
 }
 
 // Update fields in [dbus_service] from [service].
@@ -296,7 +297,8 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
   self->connection = g_object_ref(connection);
   g_dbus_object_manager_server_set_connection(self->object_manager, connection);
 
-  g_autoptr(GDBusObjectSkeleton) o = g_dbus_object_skeleton_new("/");
+  g_autoptr(GDBusObjectSkeleton) o =
+      g_dbus_object_skeleton_new("/com/canonical/UbuntuAdvantage");
   g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(self->ua));
   g_dbus_object_manager_server_export(self->object_manager, o);
 }
