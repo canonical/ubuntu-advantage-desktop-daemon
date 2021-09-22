@@ -11,7 +11,7 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!json_parser_load_from_stream_finish(parser, result, &error)) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   JsonNode *root = json_parser_get_root(parser);
@@ -45,7 +45,7 @@ static gboolean wait_finish(GSubprocess *subprocess, GAsyncResult *result,
                             GTask *task) {
   g_autoptr(GError) error = NULL;
   if (!g_subprocess_wait_finish(subprocess, result, &error)) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return FALSE;
   }
 
@@ -138,7 +138,7 @@ void ua_get_status(GCancellable *cancellable, GAsyncReadyCallback callback,
       g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "status",
                        "--format=json", NULL);
   if (subprocess == NULL) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   g_subprocess_wait_async(subprocess, cancellable, ua_status_cb,
@@ -160,7 +160,7 @@ void ua_attach(const char *token, GCancellable *cancellable,
   g_autoptr(GSubprocess) subprocess = g_subprocess_new(
       G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "attach", token, NULL);
   if (subprocess == NULL) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   g_subprocess_wait_async(subprocess, cancellable, ua_attach_cb,
@@ -182,7 +182,7 @@ void ua_detach(GCancellable *cancellable, GAsyncReadyCallback callback,
   g_autoptr(GSubprocess) subprocess = g_subprocess_new(
       G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "detach", NULL);
   if (subprocess == NULL) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   g_subprocess_wait_async(subprocess, cancellable, ua_detach_cb,
@@ -205,7 +205,7 @@ void ua_enable(const char *service_name, GCancellable *cancellable,
       g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "enable",
                        service_name, NULL);
   if (subprocess == NULL) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   g_subprocess_wait_async(subprocess, cancellable, ua_enable_cb,
@@ -228,7 +228,7 @@ void ua_disable(const char *service_name, GCancellable *cancellable,
       g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "disable",
                        service_name, NULL);
   if (subprocess == NULL) {
-    g_task_return_error(task, error);
+    g_task_return_error(task, g_steal_pointer(&error));
     return;
   }
   g_subprocess_wait_async(subprocess, cancellable, ua_disable_cb,
