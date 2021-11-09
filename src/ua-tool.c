@@ -101,8 +101,6 @@ static void ua_detach_cb(GObject *object, GAsyncResult *result,
   if (wait_finish(subprocess, result, task)) {
     g_task_return_boolean(task, TRUE);
   }
-
-  g_task_return_boolean(task, TRUE);
 }
 
 // Called when 'ua enable' process completes.
