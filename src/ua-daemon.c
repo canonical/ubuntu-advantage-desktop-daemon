@@ -252,62 +252,11 @@ static void update_status(UaDaemon *self, UaStatus *status) {
         o, G_DBUS_INTERFACE_SKELETON(dbus_service));
     g_dbus_object_manager_server_export(self->object_manager, o);
   }
-
-  g_autoptr(GDateTime) now = g_date_time_new_now_utc();
-  g_autofree gchar *last_refresh =
-      g_date_time_format(now, "%Y-%m-%dT%H:%M:%SZ");
-  ua_ubuntu_advantage_set_last_refresh(UA_UBUNTU_ADVANTAGE(self->ua),
-                                       last_refresh);
 }
 
 // Called when the UA status is changed.
 static void status_changed_cb(UaDaemon *self) {
   update_status(self, ua_status_monitor_get_status(self->status_monitor));
-}
-
-// Called when 'ua status' completes.
-static void get_status_cb(GObject *object, GAsyncResult *result,
-                          gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
-  UaDaemon *self = data->self;
-
-  g_autoptr(GError) error = NULL;
-  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
-  if (status == NULL) {
-    g_autofree gchar *error_message =
-        g_strdup_printf("Failed to get status: %s", error->message);
-    g_dbus_method_invocation_return_dbus_error(
-        data->invocation, "com.canonical.UbuntuAdvantage.Failed",
-        error_message);
-    return;
-  }
-
-  ua_ubuntu_advantage_complete_refresh_status(self->ua, data->invocation);
-}
-
-// Called when result of checking authorization for refreshing status completes.
-static void auth_refresh_status_cb(GObject *object, GAsyncResult *result,
-                                   gpointer user_data) {
-  g_autoptr(CallbackData) data = user_data;
-
-  g_autoptr(GError) error = NULL;
-  if (!ua_check_authorization_finish(result, &error)) {
-    g_dbus_method_invocation_return_dbus_error(
-        data->invocation, "com.canonical.UbuntuAdvantage.AuthFailed",
-        error->message);
-    return;
-  }
-
-  ua_get_status(NULL, get_status_cb, g_steal_pointer(&data));
-}
-
-// Called when a client requests com.canonical.UbuntuAdvantage.RefreshStatus().
-static gboolean dbus_refresh_status_cb(UaDaemon *self,
-                                       GDBusMethodInvocation *invocation) {
-  ua_check_authorization("com.canonical.UbuntuAdvantage.refresh-status",
-                         invocation, NULL, auth_refresh_status_cb,
-                         callback_data_new(self, invocation, NULL));
-  return TRUE;
 }
 
 // Called when 'ua attach' completes.
@@ -441,8 +390,6 @@ static void ua_daemon_init(UaDaemon *self) {
   self->services = g_ptr_array_new_with_free_func(g_object_unref);
   ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(self->ua),
                                          PROJECT_VERSION);
-  g_signal_connect_swapped(self->ua, "handle-refresh-status",
-                           G_CALLBACK(dbus_refresh_status_cb), self);
   g_signal_connect_swapped(self->ua, "handle-attach",
                            G_CALLBACK(dbus_attach_cb), self);
   g_signal_connect_swapped(self->ua, "handle-detach",

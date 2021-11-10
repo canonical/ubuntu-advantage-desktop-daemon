@@ -4,11 +4,6 @@
 
 #include "ua-status.h"
 
-void ua_get_status(GCancellable *cancellable, GAsyncReadyCallback callback,
-                   gpointer callback_data);
-
-UaStatus *ua_get_status_finish(GAsyncResult *result, GError **error);
-
 void ua_attach(const char *token, GCancellable *cancellable,
                GAsyncReadyCallback callback, gpointer callback_data);
 
