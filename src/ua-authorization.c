@@ -52,10 +52,12 @@ void ua_check_authorization(const gchar *action_id,
   g_autoptr(GTask) task =
       g_task_new(NULL, cancellable, callback, callback_data);
 
-  g_autoptr(PolkitSubject) subject = polkit_system_bus_name_new(
+  // g_autoptr(PolkitSubject) requires Polkit 0.114
+  PolkitSubject *subject = polkit_system_bus_name_new(
       g_dbus_method_invocation_get_sender(invocation));
   polkit_permission_new(action_id, subject, cancellable, permission_cb,
                         g_steal_pointer(&task));
+  g_object_unref(subject);
 }
 
 // Complete request started with ua_check_authorization().
