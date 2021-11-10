@@ -139,6 +139,9 @@ gboolean ua_status_monitor_start(UaStatusMonitor *self, GError **error) {
                              G_CALLBACK(status_file_changed_cb), self);
   }
 
+  // Read initial status.
+  parse_status_file(self);
+
   return TRUE;
 }
 
