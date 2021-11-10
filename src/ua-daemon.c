@@ -195,6 +195,8 @@ static void update_service(UaUbuntuAdvantageService *dbus_service,
                            UaService *service) {
   ua_ubuntu_advantage_service_set_name(dbus_service,
                                        ua_service_get_name(service));
+  ua_ubuntu_advantage_service_set_description(
+      dbus_service, ua_service_get_description(service));
   ua_ubuntu_advantage_service_set_entitled(dbus_service,
                                            ua_service_get_entitled(service));
   ua_ubuntu_advantage_service_set_status(dbus_service,
