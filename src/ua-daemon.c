@@ -3,6 +3,7 @@
 #include "config.h"
 #include "ua-authorization.h"
 #include "ua-daemon.h"
+#include "ua-status-monitor.h"
 #include "ua-tool.h"
 #include "ua-ubuntu-advantage-generated.h"
 
@@ -13,6 +14,7 @@ struct _UaDaemon {
   GDBusConnection *connection;
   GDBusObjectManagerServer *object_manager;
   UaUbuntuAdvantage *ua;
+  UaStatusMonitor *status_monitor;
   GPtrArray *services;
 };
 
@@ -258,6 +260,11 @@ static void update_status(UaDaemon *self, UaStatus *status) {
                                        last_refresh);
 }
 
+// Called when the UA status is changed.
+static void status_changed_cb(UaDaemon *self) {
+  update_status(self, ua_status_monitor_get_status(self->status_monitor));
+}
+
 // Called when 'ua status' completes.
 static void get_status_cb(GObject *object, GAsyncResult *result,
                           gpointer user_data) {
@@ -275,24 +282,7 @@ static void get_status_cb(GObject *object, GAsyncResult *result,
     return;
   }
 
-  update_status(self, status);
-
   ua_ubuntu_advantage_complete_refresh_status(self->ua, data->invocation);
-}
-
-// Called when startup run of 'ua status' completes.
-static void get_initial_status_cb(GObject *object, GAsyncResult *result,
-                                  gpointer user_data) {
-  UaDaemon *self = user_data;
-
-  g_autoptr(GError) error = NULL;
-  g_autoptr(UaStatus) status = ua_get_status_finish(result, &error);
-  if (status == NULL) {
-    g_warning("Failed to get initial status: %s", error->message);
-    return;
-  }
-
-  update_status(self, status);
 }
 
 // Called when result of checking authorization for refreshing status completes.
@@ -438,6 +428,7 @@ static void ua_daemon_dispose(GObject *object) {
   g_clear_object(&self->connection);
   g_clear_object(&self->object_manager);
   g_clear_object(&self->ua);
+  g_clear_object(&self->status_monitor);
   g_clear_pointer(&self->services, g_ptr_array_unref);
 
   G_OBJECT_CLASS(ua_daemon_parent_class)->dispose(object);
@@ -446,6 +437,7 @@ static void ua_daemon_dispose(GObject *object) {
 static void ua_daemon_init(UaDaemon *self) {
   self->object_manager = g_dbus_object_manager_server_new("/");
   self->ua = ua_ubuntu_advantage_skeleton_new();
+  self->status_monitor = ua_status_monitor_new();
   self->services = g_ptr_array_new_with_free_func(g_object_unref);
   ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(self->ua),
                                          PROJECT_VERSION);
@@ -481,7 +473,11 @@ gboolean ua_daemon_start(UaDaemon *self, GError **error) {
   g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.canonical.UbuntuAdvantage", bus_flags,
                  bus_acquired_cb, NULL, name_lost_cb, self, NULL);
 
-  ua_get_status(NULL, get_initial_status_cb, self);
+  g_signal_connect_swapped(self->status_monitor, "changed",
+                           G_CALLBACK(status_changed_cb), self);
+  if (!ua_status_monitor_start(self->status_monitor, error)) {
+    return FALSE;
+  }
 
   return TRUE;
 }
