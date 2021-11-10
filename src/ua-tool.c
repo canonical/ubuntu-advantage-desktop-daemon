@@ -177,8 +177,9 @@ void ua_detach(GCancellable *cancellable, GAsyncReadyCallback callback,
       g_task_new(NULL, cancellable, callback, callback_data);
 
   g_autoptr(GError) error = NULL;
-  g_autoptr(GSubprocess) subprocess = g_subprocess_new(
-      G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "detach", "--assume-yes", NULL);
+  g_autoptr(GSubprocess) subprocess =
+      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "detach",
+                       "--assume-yes", NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
     return;
