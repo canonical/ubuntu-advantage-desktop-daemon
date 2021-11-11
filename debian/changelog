@@ -1,4 +1,10 @@
-ubuntu-advantage-daemon (0.1) impish; urgency=medium
+ubuntu-advantage-daemon (0.2) focal; urgency=medium
+
+  * Fix build on older version of debhelper.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Fri, 12 Nov 2021 12:38:02 +1300
+
+ubuntu-advantage-daemon (0.1) focal; urgency=medium
 
   * Initial Release.
 
