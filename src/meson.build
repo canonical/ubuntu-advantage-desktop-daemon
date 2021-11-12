@@ -36,9 +36,9 @@ install_data('com.canonical.UbuntuAdvantage.xml', install_dir: join_paths(dbus_d
 
 # Polkit policy
 i18n.merge_file(
-  'polkit policy',
   input: 'com.canonical.UbuntuAdvantage.policy.in',
   output: 'com.canonical.UbuntuAdvantage.policy',
+  data_dirs: po_dir,
   po_dir: po_dir,
   install: true,
   install_dir: policy_dir,
