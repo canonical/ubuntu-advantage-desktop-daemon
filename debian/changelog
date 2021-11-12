@@ -1,3 +1,9 @@
+ubuntu-advantage-daemon (0.3) focal; urgency=medium
+
+  * Add polkit.its so builds on older systems
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Fri, 12 Nov 2021 13:46:51 +1300
+
 ubuntu-advantage-daemon (0.2) focal; urgency=medium
 
   * Fix build on older version of debhelper.
