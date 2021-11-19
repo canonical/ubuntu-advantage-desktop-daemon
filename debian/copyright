@@ -1,7 +1,7 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: ubuntu-advantage-daemon
-Upstream-Contact: https://github.com/canonical/ua-daemon
-Source: https://github.com/canonical/ua-daemon
+Upstream-Contact: https://github.com/canonical/ubuntu-advantage-daemon
+Source: https://github.com/canonical/ubuntu-advantage-daemon
 
 Files: *
 Copyright: 2021 Canonical Ltd.

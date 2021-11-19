@@ -4,12 +4,12 @@ Priority: optional
 Maintainer: Robert Ancell <robert.ancell@canonical.com>
 Build-Depends: debhelper (>= 10), libglib2.0-dev, libjson-glib-dev, libpolkit-gobject-1-dev, meson, ninja-build
 Standards-Version: 4.5.1
-Homepage: https://github.com/canonical/ua-daemon
+Homepage: https://github.com/canonical/ubuntu-advantage-daemon
 Rules-Requires-Root: no
 
 Package: ubuntu-advantage-daemon
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, ubuntu-advantage-tools
 Description: Daemon to allow access to ubuntu-advantage via D-Bus
- ua-daemon is a D-Bus daemon that allows graphical tools easy access to the
+ ubuntu-advantage-daemon is a D-Bus daemon that allows graphical tools easy access to the
  Ubuntu Advantage services.

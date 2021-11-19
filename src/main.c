@@ -20,7 +20,8 @@ int main(int argc, char **argv) {
                                    &show_version, _("Show daemon version"),
                                    NULL},
                                   {NULL}};
-  g_autoptr(GOptionContext) context = g_option_context_new("ua-daemon");
+  g_autoptr(GOptionContext) context =
+      g_option_context_new("ubuntu-advantage-daemon");
   g_option_context_add_main_entries(context, options, NULL);
   g_autoptr(GError) error = NULL;
   if (!g_option_context_parse(context, &argc, &argv, &error)) {
@@ -28,7 +29,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
   if (show_version) {
-    g_printerr("ua-daemon %s\n", PROJECT_VERSION);
+    g_printerr("ubuntu-advantage-daemon %s\n", PROJECT_VERSION);
     return EXIT_SUCCESS;
   }
 

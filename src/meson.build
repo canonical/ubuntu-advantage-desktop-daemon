@@ -7,12 +7,12 @@ gdbus_src = gnome.gdbus_codegen(
 )
 
 conf = configuration_data()
-conf.set_quoted('GETTEXT_PACKAGE', 'ua-daemon')
+conf.set_quoted('GETTEXT_PACKAGE', 'ubuntu-advantage-daemon')
 conf.set_quoted('PROJECT_VERSION', meson.project_version())
 configure_file(output: 'config.h',
                configuration: conf)
 
-executable('ua-daemon',
+executable('ubuntu-advantage-daemon',
            'main.c', 'ua-authorization.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-status-monitor.c', 'ua-tool.c',
            gdbus_src,
            dependencies: [gio_dep, json_glib_dep, polkit_gobject_dep],
