@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (0.6) focal; urgency=medium
+
+  * Renamed package
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 22 Nov 2021 15:28:51 +1300
+
 ubuntu-advantage-daemon (0.5) focal; urgency=medium
 
   * Update meson rules for its file location.
