@@ -10,6 +10,8 @@ Build-Depends: debhelper (>= 10),
                ninja-build,
 Standards-Version: 4.5.1
 Homepage: https://github.com/canonical/ubuntu-advantage-desktop-daemon
+Vcs-Browser: https://github.com/canonical/ubuntu-advantage-desktop-daemon
+Vcs-git: https://github.com/canonical/ubuntu-advantage-desktop-daemon.git
 Rules-Requires-Root: no
 
 Package: ubuntu-advantage-desktop-daemon
