@@ -13,7 +13,7 @@ struct _UaDaemon {
   gboolean replace;
   GDBusConnection *connection;
   GDBusObjectManagerServer *object_manager;
-  UaUbuntuAdvantage *ua;
+  UaUbuntuAdvantageManager *manager;
   UaStatusMonitor *status_monitor;
   GPtrArray *services;
 };
@@ -205,8 +205,8 @@ static void update_service(UaUbuntuAdvantageService *dbus_service,
 
 // Update D-Bus interface from [status].
 static void update_status(UaDaemon *self, UaStatus *status) {
-  ua_ubuntu_advantage_set_attached(UA_UBUNTU_ADVANTAGE(self->ua),
-                                   ua_status_get_attached(status));
+  ua_ubuntu_advantage_manager_set_attached(self->manager,
+                                           ua_status_get_attached(status));
 
   // Update existing services or remove them.
   g_autoptr(GPtrArray) existing_services =
@@ -277,7 +277,7 @@ static void attach_cb(GObject *object, GAsyncResult *result,
     return;
   }
 
-  ua_ubuntu_advantage_complete_attach(self->ua, data->invocation);
+  ua_ubuntu_advantage_manager_complete_attach(self->manager, data->invocation);
 }
 
 // Called when result of checking authorization for attach completes.
@@ -323,7 +323,7 @@ static void detach_cb(GObject *object, GAsyncResult *result,
     return;
   }
 
-  ua_ubuntu_advantage_complete_detach(self->ua, data->invocation);
+  ua_ubuntu_advantage_manager_complete_detach(self->manager, data->invocation);
 }
 
 // Called when result of checking authorization for detach completes.
@@ -360,8 +360,9 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
   g_dbus_object_manager_server_set_connection(self->object_manager, connection);
 
   g_autoptr(GDBusObjectSkeleton) o =
-      g_dbus_object_skeleton_new("/com/canonical/UbuntuAdvantage");
-  g_dbus_object_skeleton_add_interface(o, G_DBUS_INTERFACE_SKELETON(self->ua));
+      g_dbus_object_skeleton_new("/com/canonical/UbuntuAdvantage/Manager");
+  g_dbus_object_skeleton_add_interface(
+      o, G_DBUS_INTERFACE_SKELETON(self->manager));
   g_dbus_object_manager_server_export(self->object_manager, o);
 }
 
@@ -378,7 +379,7 @@ static void ua_daemon_dispose(GObject *object) {
 
   g_clear_object(&self->connection);
   g_clear_object(&self->object_manager);
-  g_clear_object(&self->ua);
+  g_clear_object(&self->manager);
   g_clear_object(&self->status_monitor);
   g_clear_pointer(&self->services, g_ptr_array_unref);
 
@@ -387,14 +388,14 @@ static void ua_daemon_dispose(GObject *object) {
 
 static void ua_daemon_init(UaDaemon *self) {
   self->object_manager = g_dbus_object_manager_server_new("/");
-  self->ua = ua_ubuntu_advantage_skeleton_new();
+  self->manager = ua_ubuntu_advantage_manager_skeleton_new();
   self->status_monitor = ua_status_monitor_new();
   self->services = g_ptr_array_new_with_free_func(g_object_unref);
-  ua_ubuntu_advantage_set_daemon_version(UA_UBUNTU_ADVANTAGE(self->ua),
-                                         PROJECT_VERSION);
-  g_signal_connect_swapped(self->ua, "handle-attach",
+  ua_ubuntu_advantage_manager_set_daemon_version(self->manager,
+                                                 PROJECT_VERSION);
+  g_signal_connect_swapped(self->manager, "handle-attach",
                            G_CALLBACK(dbus_attach_cb), self);
-  g_signal_connect_swapped(self->ua, "handle-detach",
+  g_signal_connect_swapped(self->manager, "handle-detach",
                            G_CALLBACK(dbus_detach_cb), self);
 }
 
