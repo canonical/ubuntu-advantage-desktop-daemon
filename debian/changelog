@@ -1,3 +1,10 @@
+ubuntu-advantage-desktop-daemon (0.7) focal; urgency=medium
+
+  * Packaging fixes.
+  * Move manager D-Bus path.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 29 Nov 2021 16:39:09 +1300
+
 ubuntu-advantage-desktop-daemon (0.6) focal; urgency=medium
 
   * Renamed package
