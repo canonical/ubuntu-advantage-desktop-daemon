@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (0.8) focal; urgency=medium
+
+  * Fix enable/disable not working when waiting for user input.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Thu, 02 Dec 2021 16:18:22 +1300
+
 ubuntu-advantage-desktop-daemon (0.7) focal; urgency=medium
 
   * Packaging fixes.
