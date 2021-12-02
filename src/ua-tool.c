@@ -127,7 +127,7 @@ void ua_enable(const char *service_name, GCancellable *cancellable,
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess =
       g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "enable",
-                       service_name, NULL);
+                       "--assume-yes", service_name, NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
     return;
@@ -150,7 +150,7 @@ void ua_disable(const char *service_name, GCancellable *cancellable,
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess =
       g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "disable",
-                       service_name, NULL);
+                       "--assume-yes", service_name, NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
     return;
