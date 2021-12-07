@@ -1,9 +1,20 @@
-gdbus_src = gnome.gdbus_codegen(
+gdbus_codegen = find_program('gdbus-codegen')
+gdbus_src = custom_target(
   'ua-ubuntu-advantage-generated',
-  'com.canonical.UbuntuAdvantage.xml',
-  interface_prefix: 'com.canonical',
-  namespace: 'Ua',
-  autocleanup: 'all'
+  input: 'com.canonical.UbuntuAdvantage.xml',
+  output: [
+    'ua-ubuntu-advantage-generated.c',
+    'ua-ubuntu-advantage-generated.h',
+  ],
+  command: [
+    gdbus_codegen,
+    '--interface-prefix', 'com.canonical',
+    '--c-namespace', 'Ua',
+    '--generate-c-code', 'ua-ubuntu-advantage-generated',
+    '--output-directory', meson.current_build_dir(),
+    '--c-generate-autocleanup', 'all',
+    '@INPUT@',
+  ]
 )
 
 conf = configuration_data()
@@ -22,11 +33,11 @@ executable('ubuntu-advantage-desktop-daemon',
 # D-Bus service
 service_conf = configuration_data()
 service_conf.set('libexecdir', libexecdir)
-configure_file(input: 'com.canonical.UbuntuAdvantage.service.in',
-               output: 'com.canonical.UbuntuAdvantage.service',
-               configuration: service_conf,
-               install: true,
-               install_dir: join_paths(dbus_datadir, 'system-services'))
+service_file = configure_file(input: 'com.canonical.UbuntuAdvantage.service.in',
+                              output: 'com.canonical.UbuntuAdvantage.service',
+                              configuration: service_conf)
+
+install_data(service_file, install_dir: join_paths(dbus_datadir, 'system-services'))
 
 # D-Bus configuration
 install_data('com.canonical.UbuntuAdvantage.conf', install_dir: join_paths(dbus_datadir, 'system.d'))

@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (0.9) jammy; urgency=medium
+
+  * Reduce required meson version so can build on bionic.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Wed, 08 Dec 2021 12:29:44 +1300
+
 ubuntu-advantage-desktop-daemon (0.8) focal; urgency=medium
 
   * Fix enable/disable not working when waiting for user input.
