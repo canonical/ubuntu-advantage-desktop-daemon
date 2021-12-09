@@ -366,7 +366,7 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
 
   g_signal_connect_swapped(self->status_monitor, "changed",
                            G_CALLBACK(status_changed_cb), self);
-  status_changed_cb (self);
+  status_changed_cb(self);
 
   g_dbus_object_manager_server_export(self->object_manager, o);
 }
