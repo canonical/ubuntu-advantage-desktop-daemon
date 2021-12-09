@@ -363,6 +363,11 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
       g_dbus_object_skeleton_new("/com/canonical/UbuntuAdvantage/Manager");
   g_dbus_object_skeleton_add_interface(
       o, G_DBUS_INTERFACE_SKELETON(self->manager));
+
+  g_signal_connect_swapped(self->status_monitor, "changed",
+                           G_CALLBACK(status_changed_cb), self);
+  status_changed_cb (self);
+
   g_dbus_object_manager_server_export(self->object_manager, o);
 }
 
@@ -416,18 +421,16 @@ UaDaemon *ua_daemon_new(gboolean replace) {
 }
 
 gboolean ua_daemon_start(UaDaemon *self, GError **error) {
+  if (!ua_status_monitor_start(self->status_monitor, error)) {
+    return FALSE;
+  }
+
   GBusNameOwnerFlags bus_flags = G_BUS_NAME_OWNER_FLAGS_ALLOW_REPLACEMENT;
   if (self->replace) {
     bus_flags |= G_BUS_NAME_OWNER_FLAGS_REPLACE;
   }
   g_bus_own_name(G_BUS_TYPE_SYSTEM, "com.canonical.UbuntuAdvantage", bus_flags,
                  bus_acquired_cb, NULL, name_lost_cb, self, NULL);
-
-  g_signal_connect_swapped(self->status_monitor, "changed",
-                           G_CALLBACK(status_changed_cb), self);
-  if (!ua_status_monitor_start(self->status_monitor, error)) {
-    return FALSE;
-  }
 
   return TRUE;
 }

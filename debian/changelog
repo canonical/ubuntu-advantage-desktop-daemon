@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (0.10) jammy; urgency=medium
+
+  * Fix information being unset when launched via DBus activation.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Fri, 10 Dec 2021 11:14:47 +1300
+
 ubuntu-advantage-desktop-daemon (0.9) jammy; urgency=medium
 
   * Reduce required meson version so can build on bionic.
