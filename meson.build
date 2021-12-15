@@ -1,5 +1,5 @@
 project(
-  'ua-daemon', 'c',
+  'ubuntu-advantage-desktop-daemon', 'c',
   version : '1.0',
   license : 'GPL3',
   meson_version : '>= 0.45.1'
