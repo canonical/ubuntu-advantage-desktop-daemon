@@ -18,4 +18,5 @@ libexecdir = join_paths(get_option('prefix'), get_option('libexecdir'))
 policy_dir = polkit_gobject_dep.get_pkgconfig_variable('policydir', define_variable: ['prefix', get_option('prefix')])
 po_dir = join_paths(meson.current_source_dir(), 'po')
 
+subdir('po')
 subdir('src')
