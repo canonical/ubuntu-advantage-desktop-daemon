@@ -11,7 +11,7 @@ Build-Depends: debhelper (>= 10),
 Standards-Version: 4.5.1
 Homepage: https://github.com/canonical/ubuntu-advantage-desktop-daemon
 Vcs-Browser: https://github.com/canonical/ubuntu-advantage-desktop-daemon
-Vcs-git: https://github.com/canonical/ubuntu-advantage-desktop-daemon.git
+Vcs-Git: https://github.com/canonical/ubuntu-advantage-desktop-daemon.git
 Rules-Requires-Root: no
 
 Package: ubuntu-advantage-desktop-daemon
@@ -23,5 +23,5 @@ Provides: ubuntu-advantage-daemon
 Replaces: ubuntu-advantage-daemon
 Conflicts: ubuntu-advantage-daemon
 Description: Daemon to allow access to ubuntu-advantage via D-Bus
- ubuntu-advantage-desktop-daemon is a D-Bus daemon that allows graphical tools easy access to the
- Ubuntu Advantage services.
+ ubuntu-advantage-desktop-daemon is a D-Bus daemon that allows graphical tools
+ easy access to the Ubuntu Advantage services.
