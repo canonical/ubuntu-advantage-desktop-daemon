@@ -17,6 +17,8 @@ gdbus_src = custom_target(
   ]
 )
 
+daemon_builddir = meson.current_build_dir()
+
 conf = configuration_data()
 conf.set_quoted('GETTEXT_PACKAGE', 'ubuntu-advantage-desktop-daemon')
 conf.set_quoted('PROJECT_VERSION', meson.project_version())

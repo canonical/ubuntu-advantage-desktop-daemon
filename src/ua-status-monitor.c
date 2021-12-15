@@ -113,10 +113,7 @@ static void ua_status_monitor_dispose(GObject *object) {
   G_OBJECT_CLASS(ua_status_monitor_parent_class)->dispose(object);
 }
 
-static void ua_status_monitor_init(UaStatusMonitor *self) {
-  self->status_file =
-      g_file_new_for_path("/var/lib/ubuntu-advantage/status.json");
-}
+static void ua_status_monitor_init(UaStatusMonitor *self) {}
 
 static void ua_status_monitor_class_init(UaStatusMonitorClass *klass) {
   G_OBJECT_CLASS(klass)->dispose = ua_status_monitor_dispose;
@@ -126,8 +123,11 @@ static void ua_status_monitor_class_init(UaStatusMonitorClass *klass) {
                    G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }
 
-UaStatusMonitor *ua_status_monitor_new(gboolean replace) {
-  return (UaStatusMonitor *)g_object_new(ua_status_monitor_get_type(), NULL);
+UaStatusMonitor *ua_status_monitor_new(const char *path) {
+  UaStatusMonitor *self = g_object_new(ua_status_monitor_get_type(), NULL);
+  self->status_file = g_file_new_for_path(path);
+
+  return self;
 }
 
 gboolean ua_status_monitor_start(UaStatusMonitor *self, GError **error) {
