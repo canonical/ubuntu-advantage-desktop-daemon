@@ -3,6 +3,7 @@ Section: misc
 Priority: optional
 Maintainer: Robert Ancell <robert.ancell@canonical.com>
 Build-Depends: debhelper (>= 10),
+               dh-translations,
                libglib2.0-dev,
                libjson-glib-dev,
                libpolkit-gobject-1-dev,
