@@ -394,7 +394,6 @@ static void ua_daemon_dispose(GObject *object) {
 static void ua_daemon_init(UaDaemon *self) {
   self->object_manager = g_dbus_object_manager_server_new("/");
   self->manager = ua_ubuntu_advantage_manager_skeleton_new();
-  self->status_monitor = ua_status_monitor_new();
   self->services = g_ptr_array_new_with_free_func(g_object_unref);
   ua_ubuntu_advantage_manager_set_daemon_version(self->manager,
                                                  PROJECT_VERSION);
@@ -412,10 +411,11 @@ static void ua_daemon_class_init(UaDaemonClass *klass) {
                    G_SIGNAL_RUN_LAST, 0, NULL, NULL, NULL, G_TYPE_NONE, 0);
 }
 
-UaDaemon *ua_daemon_new(gboolean replace) {
+UaDaemon *ua_daemon_new(gboolean replace, const char *status_path) {
   UaDaemon *self = g_object_new(ua_daemon_get_type(), NULL);
 
   self->replace = replace;
+  self->status_monitor = ua_status_monitor_new(status_path);
 
   return self;
 }

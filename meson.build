@@ -20,3 +20,4 @@ po_dir = join_paths(meson.current_source_dir(), 'po')
 
 subdir('po')
 subdir('src')
+subdir('tests')
