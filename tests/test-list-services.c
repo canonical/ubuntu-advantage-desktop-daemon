@@ -3,9 +3,10 @@
 #include "test-daemon.h"
 
 static GVariant *get_property(GVariantIter *properties, const gchar *name) {
+  g_autoptr(GVariantIter) properties_copy = g_variant_iter_copy(properties);
   const gchar *property_name;
   GVariant *property_value;
-  while (g_variant_iter_loop(properties, "{&sv}", &property_name,
+  while (g_variant_iter_loop(properties_copy, "{&sv}", &property_name,
                              &property_value)) {
     if (strcmp(property_name, name) == 0) {
       return property_value;
@@ -21,10 +22,9 @@ static gboolean get_boolean_property(GVariantIter *properties,
   return value != NULL ? g_variant_get_boolean(value) : FALSE;
 }
 
-static const gchar *get_string_property(GVariantIter *properties,
-                                        const gchar *name) {
+static gchar *get_string_property(GVariantIter *properties, const gchar *name) {
   g_autoptr(GVariant) value = get_property(properties, name);
-  return value != NULL ? g_variant_get_string(value, NULL) : NULL;
+  return value != NULL ? g_variant_dup_string(value, NULL) : NULL;
 }
 
 static void get_managed_objects_cb(GObject *object, GAsyncResult *result,
@@ -57,25 +57,31 @@ static void get_managed_objects_cb(GObject *object, GAsyncResult *result,
       } else if (strcmp(object_path,
                         "/com/canonical/UbuntuAdvantage/Services/esm_2dapps") ==
                  0) {
+        g_autofree gchar *name = get_string_property(properties, "Name");
+        g_autofree gchar *description =
+            get_string_property(properties, "Description");
+        g_autofree gchar *entitled =
+            get_string_property(properties, "Entitled");
+        g_autofree gchar *status = get_string_property(properties, "Status");
         valid_esm_apps_service =
-            g_strcmp0(get_string_property(properties, "Name"), "esm-apps") ==
-                0 &&
-            g_strcmp0(get_string_property(properties, "Description"),
+            g_strcmp0(name, "esm-apps") == 0 &&
+            g_strcmp0(description,
                       "UA Apps: Extended Security Maintenance (ESM)") == 0 &&
-            g_strcmp0(get_string_property(properties, "Entitled"), "yes") ==
-                0 &&
-            g_strcmp0(get_string_property(properties, "Status"), "disabled") ==
-                0;
+            g_strcmp0(entitled, "yes") == 0 &&
+            g_strcmp0(status, "disabled") == 0;
       } else if (strcmp(object_path,
                         "/com/canonical/UbuntuAdvantage/Services/livepatch") ==
                  0) {
+        g_autofree gchar *name = get_string_property(properties, "Name");
+        g_autofree gchar *description =
+            get_string_property(properties, "Description");
+        g_autofree gchar *entitled =
+            get_string_property(properties, "Entitled");
+        g_autofree gchar *status = get_string_property(properties, "Status");
         valid_livepatch_service =
-            g_strcmp0(get_string_property(properties, "Name"), "livepatch") ==
-                0 &&
-            g_strcmp0(get_string_property(properties, "Description"),
-                      "Canonical Livepatch service") == 0 &&
-            g_strcmp0(get_string_property(properties, "Entitled"), "no") == 0 &&
-            g_strcmp0(get_string_property(properties, "Status"), "n/a") == 0;
+            g_strcmp0(name, "livepatch") == 0 &&
+            g_strcmp0(description, "Canonical Livepatch service") == 0 &&
+            g_strcmp0(entitled, "no") == 0 && g_strcmp0(status, "n/a") == 0;
       }
     }
   }
