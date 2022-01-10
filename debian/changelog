@@ -1,3 +1,11 @@
+ubuntu-advantage-desktop-daemon (1.1) jammy; urgency=medium
+
+  * Add tests.
+  * Fix translation building.
+  * Clean lintian warnings.
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Mon, 10 Jan 2022 16:35:08 +1300
+
 ubuntu-advantage-desktop-daemon (1.0) jammy; urgency=medium
 
   * First release into Ubuntu archive.

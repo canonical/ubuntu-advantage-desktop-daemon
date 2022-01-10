@@ -1,6 +1,6 @@
 project(
   'ubuntu-advantage-desktop-daemon', 'c',
-  version : '1.0',
+  version : '1.1',
   license : 'GPL3',
   meson_version : '>= 0.45.1'
 )
