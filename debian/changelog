@@ -1,3 +1,10 @@
+ubuntu-advantage-desktop-daemon (1.4) jammy; urgency=medium
+
+  * Specify the gettext data_dirs for the polkit files to be translated
+  * Fix an error in one of the authorization strings
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 13 Jan 2022 15:36:15 +0100
+
 ubuntu-advantage-desktop-daemon (1.3.1) jammy; urgency=medium
 
   * debian/control: use X-Ubuntu-Use-Langpack: yes temporarly until the
