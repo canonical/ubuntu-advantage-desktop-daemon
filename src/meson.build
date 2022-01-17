@@ -20,15 +20,15 @@ gdbus_src = custom_target(
 daemon_builddir = meson.current_build_dir()
 
 unitdir = ''
-systemd = dependency('systemd', required: false)
-if systemd.found()
-  unitdir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
-endif
+systemd = dependency('systemd')
+unitdir = systemd.get_pkgconfig_variable('systemdsystemunitdir')
+
+confsystemd = configuration_data()
+confsystemd.set('libexecdir', libexecdir)
 
 conf = configuration_data()
 conf.set_quoted('GETTEXT_PACKAGE', 'ubuntu-advantage-desktop-daemon')
 conf.set_quoted('PROJECT_VERSION', meson.project_version())
-conf.set('libexecdir', libexecdir)
 configure_file(output: 'config.h',
                configuration: conf)
 
@@ -52,14 +52,12 @@ install_data(service_file, install_dir: join_paths(dbus_datadir, 'system-service
 systemd_unit = configure_file(
   input: 'ubuntu-advantage-desktop-daemon.service.in',
   output: 'ubuntu-advantage-desktop-daemon.service',
-  configuration: conf
+  configuration: confsystemd
 )
 
-if unitdir != ''
-  install_data(systemd_unit,
-    install_dir: unitdir
-  )
-endif
+install_data(systemd_unit,
+  install_dir: unitdir
+)
 
 # D-Bus configuration
 install_data('com.canonical.UbuntuAdvantage.conf', install_dir: join_paths(dbus_datadir, 'system.d'))
