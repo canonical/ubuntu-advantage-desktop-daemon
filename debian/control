@@ -10,6 +10,7 @@ Build-Depends: dbus-x11,
                libpolkit-gobject-1-dev,
                meson,
                ninja-build,
+               systemd,
 Standards-Version: 4.5.1
 X-Ubuntu-Use-Langpack: yes
 Homepage: https://github.com/canonical/ubuntu-advantage-desktop-daemon
