@@ -2,3 +2,4 @@
 Name=com.canonical.UbuntuAdvantage
 Exec=@libexecdir@/ubuntu-advantage-desktop-daemon
 User=root
+SystemdService=ubuntu-advantage-desktop-daemon.service
