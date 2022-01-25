@@ -1,3 +1,11 @@
+ubuntu-advantage-desktop-daemon (1.6) jammy; urgency=medium
+
+  * debian/rules:
+    - set libexecdir to /usr/libexec which is the standard location
+      nowadays, pointed out during the MIR review
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 25 Jan 2022 10:43:49 +0100
+
 ubuntu-advantage-desktop-daemon (1.5) jammy; urgency=medium
 
   * Use a system unit to improve security.
