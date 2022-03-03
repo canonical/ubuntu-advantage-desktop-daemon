@@ -21,6 +21,12 @@ enum { SIGNAL_CHANGED, SIGNAL_LAST };
 
 static guint signals[SIGNAL_LAST] = {0};
 
+static UaStatus *make_empty_status() {
+  g_autoptr(GPtrArray) services =
+      g_ptr_array_new_with_free_func(g_object_unref);
+  return ua_status_new(FALSE, services);
+}
+
 // Called when JSON parsing is complete.
 static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
                                gpointer user_data) {
@@ -73,9 +79,7 @@ static void parse_status_file(UaStatusMonitor *self) {
   if (stream == NULL) {
     if (g_error_matches(error, G_IO_ERROR, G_IO_ERROR_NOT_FOUND)) {
       g_clear_object(&self->status);
-      g_autoptr(GPtrArray) services =
-          g_ptr_array_new_with_free_func(g_object_unref);
-      self->status = ua_status_new(FALSE, services);
+      self->status = make_empty_status();
       g_signal_emit(self, signals[SIGNAL_CHANGED], 0);
     } else {
       g_printerr("Failed to read UA status file: %s\n", error->message);
@@ -113,7 +117,9 @@ static void ua_status_monitor_dispose(GObject *object) {
   G_OBJECT_CLASS(ua_status_monitor_parent_class)->dispose(object);
 }
 
-static void ua_status_monitor_init(UaStatusMonitor *self) {}
+static void ua_status_monitor_init(UaStatusMonitor *self) {
+  self->status = make_empty_status();
+}
 
 static void ua_status_monitor_class_init(UaStatusMonitorClass *klass) {
   G_OBJECT_CLASS(klass)->dispose = ua_status_monitor_dispose;
