@@ -27,6 +27,30 @@ static UaStatus *make_empty_status() {
   return ua_status_new(FALSE, services);
 }
 
+// json_object_get_boolean_member_with_default is only available in
+// json-glib 1.6, reimplemented here for older versions.
+static gboolean get_boolean_member_with_default(JsonObject *object,
+                                                const char *member_name,
+                                                gboolean default_value) {
+  if (json_object_has_member(object, member_name)) {
+    return json_object_get_boolean_member(object, member_name);
+  } else {
+    return default_value;
+  }
+}
+
+// json_object_get_string_member_with_default is only available in
+// json-glib 1.6, reimplemented here for older versions.
+static const gchar *get_string_member_with_default(JsonObject *object,
+                                                   const char *member_name,
+                                                   const char *default_value) {
+  if (json_object_has_member(object, member_name)) {
+    return json_object_get_string_member(object, member_name);
+  } else {
+    return default_value;
+  }
+}
+
 // Called when JSON parsing is complete.
 static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
                                gpointer user_data) {
@@ -45,7 +69,8 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
   }
   JsonObject *status = json_node_get_object(root);
 
-  gboolean attached = json_object_get_boolean_member(status, "attached");
+  gboolean attached =
+      get_boolean_member_with_default(status, "attached", FALSE);
 
   g_autoptr(GPtrArray) services =
       g_ptr_array_new_with_free_func(g_object_unref);
@@ -53,16 +78,17 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
   for (guint i = 0; i < json_array_get_length(services_array); i++) {
     JsonObject *s = json_array_get_object_element(services_array, i);
 
-    if (g_strcmp0(json_object_get_string_member(s, "available"), "yes") != 0) {
+    if (g_strcmp0(get_string_member_with_default(s, "available", ""), "yes") !=
+        0) {
       continue;
     }
 
     g_ptr_array_add(
         services,
-        ua_service_new(json_object_get_string_member(s, "name"),
-                       json_object_get_string_member(s, "description"),
-                       json_object_get_string_member(s, "entitled"),
-                       json_object_get_string_member(s, "status")));
+        ua_service_new(get_string_member_with_default(s, "name", ""),
+                       get_string_member_with_default(s, "description", ""),
+                       get_string_member_with_default(s, "entitled", ""),
+                       get_string_member_with_default(s, "status", "")));
   }
 
   g_clear_object(&self->status);
