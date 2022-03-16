@@ -52,6 +52,11 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
   JsonArray *services_array = json_object_get_array_member(status, "services");
   for (guint i = 0; i < json_array_get_length(services_array); i++) {
     JsonObject *s = json_array_get_object_element(services_array, i);
+
+    if (g_strcmp0(json_object_get_string_member(s, "available"), "yes") != 0) {
+      continue;
+    }
+
     g_ptr_array_add(
         services,
         ua_service_new(json_object_get_string_member(s, "name"),

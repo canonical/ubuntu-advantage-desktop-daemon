@@ -227,6 +227,8 @@ int test_daemon_run(
   json_builder_set_member_name(builder, "description");
   json_builder_add_string_value(builder,
                                 "UA Apps: Extended Security Maintenance (ESM)");
+  json_builder_set_member_name(builder, "available");
+  json_builder_add_string_value(builder, "yes");
   json_builder_set_member_name(builder, "entitled");
   json_builder_add_string_value(builder, "yes");
   json_builder_set_member_name(builder, "status");
@@ -239,10 +241,21 @@ int test_daemon_run(
   json_builder_add_string_value(builder, "livepatch");
   json_builder_set_member_name(builder, "description");
   json_builder_add_string_value(builder, "Canonical Livepatch service");
+  json_builder_set_member_name(builder, "available");
+  json_builder_add_string_value(builder, "yes");
   json_builder_set_member_name(builder, "entitled");
   json_builder_add_string_value(builder, "no");
   json_builder_set_member_name(builder, "status");
   json_builder_add_string_value(builder, "n/a");
+  json_builder_end_object(builder);
+
+  json_builder_begin_object(builder);
+  json_builder_set_member_name(builder, "name");
+  json_builder_add_string_value(builder, "disabled");
+  json_builder_set_member_name(builder, "description");
+  json_builder_add_string_value(builder, "A disabled service");
+  json_builder_set_member_name(builder, "available");
+  json_builder_add_string_value(builder, "no");
   json_builder_end_object(builder);
 
   json_builder_end_array(builder);
