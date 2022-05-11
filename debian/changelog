@@ -1,3 +1,11 @@
+ubuntu-advantage-desktop-daemon (1.9) kinetic; urgency=medium
+
+  * src/ubuntu-advantage-desktop-daemon.service.in:
+    - relax the hardening rules to fix livepatch and other services
+      (lp: #1972809)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 11 May 2022 12:47:28 +0200
+
 ubuntu-advantage-desktop-daemon (1.8) jammy; urgency=medium
 
   * Hide unavailable services (LP: #1965138)
