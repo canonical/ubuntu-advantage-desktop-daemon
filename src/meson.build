@@ -12,7 +12,6 @@ gdbus_src = custom_target(
     '--c-namespace', 'Ua',
     '--generate-c-code', 'ua-ubuntu-advantage-generated',
     '--output-directory', meson.current_build_dir(),
-    '--c-generate-autocleanup', 'all',
     '@INPUT@',
   ]
 )

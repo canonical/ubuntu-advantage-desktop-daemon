@@ -7,6 +7,11 @@
 #include "ua-tool.h"
 #include "ua-ubuntu-advantage-generated.h"
 
+// These are not in the generated code because gdbus-codegen
+// --c-generate-autocleanup is not available in 16.04 LTS.
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(UaUbuntuAdvantageManager, g_object_unref)
+G_DEFINE_AUTOPTR_CLEANUP_FUNC(UaUbuntuAdvantageService, g_object_unref)
+
 struct _UaDaemon {
   GObject parent_instance;
 
