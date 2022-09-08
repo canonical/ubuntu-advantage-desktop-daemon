@@ -1,5 +1,7 @@
 #include <gio/gio.h>
 #include <json-glib/json-glib.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "config.h"
 #include "test-daemon.h"

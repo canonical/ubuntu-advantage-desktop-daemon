@@ -1,4 +1,5 @@
 #include <gio/gio.h>
+#include <string.h>
 
 #include "test-daemon.h"
 
