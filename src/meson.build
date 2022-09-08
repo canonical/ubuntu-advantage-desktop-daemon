@@ -10,8 +10,7 @@ gdbus_src = custom_target(
     gdbus_codegen,
     '--interface-prefix', 'com.canonical',
     '--c-namespace', 'Ua',
-    '--generate-c-code', 'ua-ubuntu-advantage-generated',
-    '--output-directory', meson.current_build_dir(),
+    '--generate-c-code', 'src/ua-ubuntu-advantage-generated',
     '@INPUT@',
   ]
 )
@@ -28,6 +27,7 @@ executable('ubuntu-advantage-desktop-daemon',
            'main.c', 'ua-authorization.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-status-monitor.c', 'ua-tool.c',
            gdbus_src,
            dependencies: [gio_dep, json_glib_dep, polkit_gobject_dep],
+           include_directories: include_directories('..'),
            install: true,
            install_dir: libexecdir)
 
