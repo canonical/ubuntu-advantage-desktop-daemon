@@ -1,5 +1,6 @@
 #include <glib/gi18n.h>
 #include <locale.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "ua-daemon.h"

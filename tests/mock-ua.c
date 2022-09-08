@@ -1,5 +1,7 @@
 #include <glib.h>
 #include <json-glib/json-glib.h>
+#include <stdlib.h>
+#include <string.h>
 
 static JsonObject *get_status() {
   const gchar *status_file = getenv("MOCK_UA_STATUS_FILE");
