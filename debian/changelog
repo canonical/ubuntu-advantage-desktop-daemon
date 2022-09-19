@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (1.9+ubuntupro1) kinetic; urgency=medium
+
+  * Change Polkit dialogs from using "Ubuntu Advantage" to "Ubuntu Pro"
+
+ -- Robert Ancell <robert.ancell@canonical.com>  Tue, 20 Sep 2022 11:29:44 +1200
+
 ubuntu-advantage-desktop-daemon (1.9) kinetic; urgency=medium
 
   * src/ubuntu-advantage-desktop-daemon.service.in:
