@@ -1,10 +1,10 @@
-ubuntu-advantage-desktop-daemon (1.10) UNRELEASED; urgency=medium
+ubuntu-advantage-desktop-daemon (1.10) kinetic; urgency=medium
 
   [ Robert Ancell ]
   * Change Polkit dialogs from using "Ubuntu Advantage" to "Ubuntu Pro"
   * Fix the build on 16.04 LTS
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Sep 2022 18:20:41 +0200
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Sep 2022 18:20:50 +0200
 
 ubuntu-advantage-desktop-daemon (1.9) kinetic; urgency=medium
 
