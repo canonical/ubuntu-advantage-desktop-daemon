@@ -7,8 +7,8 @@
   <vendor_url>https://ubuntu.com/advantage</vendor_url>
 
   <action id="com.canonical.UbuntuAdvantage.attach">
-    <description>Attach machine to Ubuntu Advantage</description>
-    <message>Authentication is required to attach this machine to Ubuntu Advantage</message>
+    <description>Attach machine to Ubuntu Pro</description>
+    <message>Authentication is required to attach this machine to Ubuntu Pro</message>
     <defaults>
       <allow_any>auth_admin</allow_any>
       <allow_inactive>auth_admin</allow_inactive>
@@ -17,8 +17,8 @@
   </action>
 
   <action id="com.canonical.UbuntuAdvantage.detach">
-    <description>Detach machine from Ubuntu Advantage</description>
-    <message>Authentication is required to detach this machine from Ubuntu Advantage</message>
+    <description>Detach machine from Ubuntu Pro</description>
+    <message>Authentication is required to detach this machine from Ubuntu Pro</message>
     <defaults>
       <allow_any>auth_admin</allow_any>
       <allow_inactive>auth_admin</allow_inactive>
@@ -27,8 +27,8 @@
   </action>
 
   <action id="com.canonical.UbuntuAdvantage.enable-service">
-    <description>Enable Ubuntu Advantage service</description>
-    <message>Authentication is required to enable an Ubuntu Advantage service</message>
+    <description>Enable Ubuntu Pro service</description>
+    <message>Authentication is required to enable an Ubuntu Pro service</message>
     <defaults>
       <allow_any>auth_admin</allow_any>
       <allow_inactive>auth_admin</allow_inactive>
@@ -37,8 +37,8 @@
   </action>
 
   <action id="com.canonical.UbuntuAdvantage.disable-service">
-    <description>Disable Ubuntu Advantage service</description>
-    <message>Authentication is required to disable an Ubuntu Advantage service</message>
+    <description>Disable Ubuntu Pro service</description>
+    <message>Authentication is required to disable an Ubuntu Pro service</message>
     <defaults>
       <allow_any>auth_admin</allow_any>
       <allow_inactive>auth_admin</allow_inactive>
