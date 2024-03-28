@@ -18,18 +18,18 @@ static gboolean wait_finish(GSubprocess *subprocess, GAsyncResult *result,
 
   if (g_subprocess_get_if_exited(subprocess)) {
     g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED,
-                            "UA client exited with code %d",
+                            "Pro client exited with code %d",
                             g_subprocess_get_exit_status(subprocess));
   } else {
     g_task_return_new_error(task, G_IO_ERROR, G_IO_ERROR_FAILED,
-                            "UA client exited with signal %d",
+                            "Pro client exited with signal %d",
                             g_subprocess_get_term_sig(subprocess));
   }
 
   return FALSE;
 }
 
-// Called when 'ua attach' process completes.
+// Called when 'pro attach' process completes.
 static void ua_attach_cb(GObject *object, GAsyncResult *result,
                          gpointer user_data) {
   GSubprocess *subprocess = G_SUBPROCESS(object);
@@ -40,7 +40,7 @@ static void ua_attach_cb(GObject *object, GAsyncResult *result,
   }
 }
 
-// Called when 'ua detach' process completes.
+// Called when 'pro detach' process completes.
 static void ua_detach_cb(GObject *object, GAsyncResult *result,
                          gpointer user_data) {
   GSubprocess *subprocess = G_SUBPROCESS(object);
@@ -51,7 +51,7 @@ static void ua_detach_cb(GObject *object, GAsyncResult *result,
   }
 }
 
-// Called when 'ua enable' process completes.
+// Called when 'pro enable' process completes.
 static void ua_enable_cb(GObject *object, GAsyncResult *result,
                          gpointer user_data) {
   GSubprocess *subprocess = G_SUBPROCESS(object);
@@ -62,7 +62,7 @@ static void ua_enable_cb(GObject *object, GAsyncResult *result,
   }
 }
 
-// Called when 'ua disable' process completes.
+// Called when 'pro disable' process completes.
 static void ua_disable_cb(GObject *object, GAsyncResult *result,
                           gpointer user_data) {
   GSubprocess *subprocess = G_SUBPROCESS(object);
@@ -81,7 +81,7 @@ void ua_attach(const char *token, GCancellable *cancellable,
 
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess = g_subprocess_new(
-      G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "attach", token, NULL);
+      G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "pro", "attach", token, NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
     return;
@@ -103,7 +103,7 @@ void ua_detach(GCancellable *cancellable, GAsyncReadyCallback callback,
 
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess =
-      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "detach",
+      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "pro", "detach",
                        "--assume-yes", NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
@@ -126,7 +126,7 @@ void ua_enable(const char *service_name, GCancellable *cancellable,
 
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess =
-      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "enable",
+      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "pro", "enable",
                        "--assume-yes", service_name, NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
@@ -149,7 +149,7 @@ void ua_disable(const char *service_name, GCancellable *cancellable,
 
   g_autoptr(GError) error = NULL;
   g_autoptr(GSubprocess) subprocess =
-      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "ua", "disable",
+      g_subprocess_new(G_SUBPROCESS_FLAGS_STDOUT_PIPE, &error, "pro", "disable",
                        "--assume-yes", service_name, NULL);
   if (subprocess == NULL) {
     g_task_return_error(task, g_steal_pointer(&error));
