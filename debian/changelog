@@ -1,3 +1,11 @@
+ubuntu-advantage-desktop-daemon (1.11) noble; urgency=medium
+
+  * Use preferred `pro` command instead of `ua` command
+  * d/control: Depend on ubuntu-pro-client instead of ubuntu-advantage-tools
+    (LP: #2057674)
+
+ -- Calvin Mwadime <calvin.mwadime@canonical.com>  Thu, 28 Mar 2024 16:17:26 +0300
+
 ubuntu-advantage-desktop-daemon (1.10) kinetic; urgency=medium
 
   [ Robert Ancell ]
