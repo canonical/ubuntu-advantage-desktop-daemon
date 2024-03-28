@@ -20,7 +20,7 @@ Rules-Requires-Root: no
 
 Package: ubuntu-advantage-desktop-daemon
 Architecture: any
-Depends: ubuntu-advantage-tools,
+Depends: ubuntu-pro-client,
          ${misc:Depends},
          ${shlibs:Depends},
 Provides: ubuntu-advantage-daemon
