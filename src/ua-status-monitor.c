@@ -59,12 +59,12 @@ static void ua_status_parse_cb(GObject *object, GAsyncResult *result,
 
   g_autoptr(GError) error = NULL;
   if (!json_parser_load_from_stream_finish(parser, result, &error)) {
-    g_warning("Failed to parse UA status: %s", error->message);
+    g_warning("Failed to parse Pro status: %s", error->message);
     return;
   }
   JsonNode *root = json_parser_get_root(parser);
   if (!JSON_NODE_HOLDS_OBJECT(root)) {
-    g_warning("Invalid UA status JSON");
+    g_warning("Invalid Pro status JSON");
     return;
   }
   JsonObject *status = json_node_get_object(root);
@@ -113,7 +113,7 @@ static void parse_status_file(UaStatusMonitor *self) {
       self->status = make_empty_status();
       g_signal_emit(self, signals[SIGNAL_CHANGED], 0);
     } else {
-      g_printerr("Failed to read UA status file: %s\n", error->message);
+      g_printerr("Failed to read Pro status file: %s\n", error->message);
     }
     return;
   }
