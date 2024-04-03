@@ -4,7 +4,7 @@ ubuntu-advantage-desktop-daemon (1.11) noble; urgency=medium
   * d/control: Depend on ubuntu-pro-client instead of ubuntu-advantage-tools
     (LP: #2057674)
 
- -- Calvin Mwadime <calvin.mwadime@canonical.com>  Thu, 28 Mar 2024 16:17:26 +0300
+ -- Calvin Mwadime <calvin.mwadime@canonical.com>  Wed, 03 Apr 2024 11:20:38 +0200
 
 ubuntu-advantage-desktop-daemon (1.10) kinetic; urgency=medium
 
