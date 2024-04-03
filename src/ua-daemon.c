@@ -79,7 +79,7 @@ static void service_callback_data_free(ServiceCallbackData *data) {
 
 G_DEFINE_AUTOPTR_CLEANUP_FUNC(ServiceCallbackData, service_callback_data_free)
 
-// Called when 'ua enable' completes.
+// Called when 'pro enable' completes.
 static void enable_cb(GObject *object, GAsyncResult *result,
                       gpointer user_data) {
   g_autoptr(ServiceCallbackData) data = user_data;
@@ -126,7 +126,7 @@ static gboolean dbus_service_enable_cb(UaDaemon *self,
   return TRUE;
 }
 
-// Called when 'ua disable' completes.
+// Called when 'pro disable' completes.
 static void disable_cb(GObject *object, GAsyncResult *result,
                        gpointer user_data) {
   g_autoptr(ServiceCallbackData) data = user_data;
@@ -261,12 +261,12 @@ static void update_status(UaDaemon *self, UaStatus *status) {
   }
 }
 
-// Called when the UA status is changed.
+// Called when the Pro status is changed.
 static void status_changed_cb(UaDaemon *self) {
   update_status(self, ua_status_monitor_get_status(self->status_monitor));
 }
 
-// Called when 'ua attach' completes.
+// Called when 'pro attach' completes.
 static void attach_cb(GObject *object, GAsyncResult *result,
                       gpointer user_data) {
   g_autoptr(CallbackData) data = user_data;
@@ -312,7 +312,7 @@ static gboolean dbus_attach_cb(UaDaemon *self,
   return TRUE;
 }
 
-// Called when 'ua detach' completes.
+// Called when 'pro detach' completes.
 static void detach_cb(GObject *object, GAsyncResult *result,
                       gpointer user_data) {
   g_autoptr(CallbackData) data = user_data;

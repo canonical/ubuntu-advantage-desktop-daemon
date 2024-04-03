@@ -34,7 +34,7 @@ test_disable_service = executable('test-disable-service',
                                   'test-daemon.c',
                                   dependencies: [gio_dep, json_glib_dep])
 
-executable('ua',
+executable('pro',
            'mock-ua.c',
            dependencies: [gio_dep, json_glib_dep])
 
