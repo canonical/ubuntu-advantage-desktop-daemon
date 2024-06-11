@@ -265,7 +265,8 @@ int test_daemon_run(
   json_builder_end_object(builder);
 
   g_autoptr(JsonGenerator) generator = json_generator_new();
-  json_generator_set_root(generator, json_builder_get_root(builder));
+  g_autoptr(JsonNode) root = json_builder_get_root(builder);
+  json_generator_set_root(generator, root);
   g_autofree gchar *status_json = json_generator_to_data(generator, NULL);
 
   if (!g_file_set_contents(status_path, status_json, -1, &error)) {
