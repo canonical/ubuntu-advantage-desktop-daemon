@@ -42,10 +42,12 @@ static void get_attached_cb(GObject *object, GAsyncResult *result,
                          "/com/canonical/UbuntuAdvantage/Manager",
                          "com.canonical.UbuntuAdvantage.Manager", "Attach",
                          g_variant_new("(s)", "1234"), G_VARIANT_TYPE("()"),
-                         G_DBUS_CALL_FLAGS_NONE, -1, NULL, attach_cb, NULL);
+                         G_DBUS_CALL_FLAGS_NONE, -1, NULL, attach_cb, &error);
+  g_assert_no_error(error);
 }
 
 static void daemon_ready_cb(GDBusConnection *connection) {
+  g_autoptr(GError) error = NULL;
   g_dbus_connection_call(connection, "com.canonical.UbuntuAdvantage",
                          "/com/canonical/UbuntuAdvantage/Manager",
                          "org.freedesktop.DBus.Properties", "Get",
@@ -53,7 +55,8 @@ static void daemon_ready_cb(GDBusConnection *connection) {
                                        "com.canonical.UbuntuAdvantage.Manager",
                                        "Attached"),
                          G_VARIANT_TYPE("(v)"), G_DBUS_CALL_FLAGS_NONE, -1,
-                         NULL, get_attached_cb, NULL);
+                         NULL, get_attached_cb, &error);
+  g_assert_no_error(error);
 }
 
 static void attached_changed_cb(gboolean attached) {
