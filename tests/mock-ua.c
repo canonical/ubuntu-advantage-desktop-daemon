@@ -39,11 +39,56 @@ static void update_status(JsonObject *status) {
 }
 
 static int attach(int argc, char **argv) {
-  if (argc != 1) {
-    g_printerr("Invalid args\n");
+  g_autoptr(GError) error = NULL;
+  g_autofree char *config_file = NULL;
+  g_autofree char *format = NULL;
+  gboolean no_auto_enable = FALSE;
+
+  const GOptionEntry options_entries[] = {
+      {"no-auto-enable", 0, 0, G_OPTION_ARG_NONE, &no_auto_enable, NULL, NULL},
+      {"attach-config", 0, 0, G_OPTION_ARG_FILENAME, &config_file, NULL, NULL},
+      {"format", 0, 0, G_OPTION_ARG_STRING, &format, NULL, NULL},
+      {NULL},
+  };
+
+  g_autoptr(GOptionContext) options_context =
+      g_option_context_new("<token> [flags]");
+  g_option_context_add_main_entries(options_context, options_entries, NULL);
+
+  if (!g_option_context_parse(options_context, &argc, &argv, &error)) {
+    g_critical("Options parse error: %s", error->message);
     return EXIT_FAILURE;
   }
-  const char *token = argv[0];
+
+  g_autofree char *token = NULL;
+  g_assert_cmpint(argc, >, 1);
+  if (argc > 2)
+    token = g_strdup(argv[2]);
+
+  if (config_file) {
+    g_autofree char *config_file_contents = NULL;
+    g_autoptr(GRegex) yaml_regex = NULL;
+    g_autoptr(GMatchInfo) info = NULL;
+
+    if (!g_file_get_contents(config_file, &config_file_contents, NULL,
+                             &error)) {
+      g_critical("Cannot open config file %s: %s", config_file, error->message);
+      return EXIT_FAILURE;
+    }
+
+    yaml_regex = g_regex_new("^token:\\s*(\\w+)$",
+                             G_REGEX_OPTIMIZE | G_REGEX_MULTILINE, 0, NULL);
+
+    if (!g_regex_match(yaml_regex, config_file_contents, 0, &info)) {
+      g_critical("Can't find token in config file %s", config_file);
+      return EXIT_FAILURE;
+    }
+
+    g_free(token);
+    token = g_match_info_fetch(info, g_match_info_get_match_count(info) - 1);
+  }
+
+  g_printerr("CLI: Received token is '%s'\n", token);
 
   g_autoptr(JsonObject) status = get_status();
   gboolean attached = json_object_get_boolean_member(status, "attached");
@@ -151,7 +196,7 @@ int main(int argc, char **argv) {
     command_argv = argv + 2;
   }
   if (g_strcmp0(command, "attach") == 0) {
-    return attach(command_argc, command_argv);
+    return attach(argc, argv);
   } else if (g_strcmp0(command, "detach") == 0) {
     return detach(command_argc, command_argv);
   } else if (g_strcmp0(command, "disable") == 0) {
