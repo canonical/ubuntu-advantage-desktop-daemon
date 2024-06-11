@@ -381,6 +381,7 @@ static void bus_acquired_cb(GDBusConnection *connection, const gchar *name,
 static void name_lost_cb(GDBusConnection *connection, const gchar *name,
                          gpointer user_data) {
   UaDaemon *self = user_data;
+  g_message("Name '%s' lost", name);
   g_signal_emit(self, signals[SIGNAL_QUIT], 0);
 }
 
