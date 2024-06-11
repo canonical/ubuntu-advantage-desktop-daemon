@@ -23,7 +23,7 @@ conf.set_quoted('PROJECT_VERSION', meson.project_version())
 configure_file(output: 'config.h',
                configuration: conf)
 
-executable('ubuntu-advantage-desktop-daemon',
+ua_daemon = executable('ubuntu-advantage-desktop-daemon',
            'main.c', 'ua-authorization.c', 'ua-daemon.c', 'ua-service.c', 'ua-status.c', 'ua-status-monitor.c', 'ua-tool.c',
            gdbus_src,
            dependencies: [gio_dep, json_glib_dep, polkit_gobject_dep],
