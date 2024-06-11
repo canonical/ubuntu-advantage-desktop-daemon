@@ -8,7 +8,20 @@ project(
 gnome = import('gnome')
 i18n = import('i18n')
 
-gio_dep = dependency('gio-unix-2.0')
+# We want to target 16.04 for now
+glib_minmax_version = '2.48'
+
+glib_version_def = 'GLIB_VERSION_@0@_@1@'.format(
+  glib_minmax_version.split('.')[0], glib_minmax_version.split('.')[1])
+
+cc = meson.get_compiler('c')
+add_project_arguments(cc.get_supported_arguments([
+    '-DGLIB_VERSION_MIN_REQUIRED=' + glib_version_def,
+    '-DGLIB_VERSION_MAX_ALLOWED=' + glib_version_def,
+  ]),
+  language: 'c')
+
+gio_dep = dependency('gio-unix-2.0', version: '>=' + glib_minmax_version)
 json_glib_dep = dependency('json-glib-1.0')
 polkit_gobject_dep = dependency('polkit-gobject-1')
 
