@@ -2,6 +2,7 @@
 #include <json-glib/json-glib.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 static JsonObject *get_status() {
   const gchar *status_file = getenv("MOCK_UA_STATUS_FILE");
@@ -75,6 +76,11 @@ static int attach(int argc, char **argv) {
       g_critical("Cannot open config file %s: %s", config_file, error->message);
       return EXIT_FAILURE;
     }
+
+    // Ensure the file is only readable by the current user.
+    struct stat statbuf;
+    g_assert_cmpint(stat(config_file, &statbuf), ==, 0);
+    g_assert_cmpint(statbuf.st_mode, ==, S_IFREG | 0600);
 
     yaml_regex = g_regex_new("^token:\\s*(\\w+)$",
                              G_REGEX_OPTIMIZE | G_REGEX_MULTILINE, 0, NULL);
