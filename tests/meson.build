@@ -34,13 +34,15 @@ test_disable_service = executable('test-disable-service',
                                   'test-daemon.c',
                                   dependencies: [gio_dep, json_glib_dep])
 
-executable('pro',
-           'mock-ua.c',
-           dependencies: [gio_dep, json_glib_dep])
+pro = executable('pro',
+                 'mock-ua.c',
+                 dependencies: [gio_dep, json_glib_dep])
 
-test('Attach', test_attach)
-test('Attach - Invalid Token', test_attach_invalid_token)
-test('Detach', test_detach)
-test('List Services', test_list_services)
-test('Enable Service', test_enable_service)
-test('Disable Service', test_disable_service)
+tests_deps = [ua_daemon, pro]
+
+test('Attach', test_attach, depends: tests_deps)
+test('Attach - Invalid Token', test_attach_invalid_token, depends: tests_deps)
+test('Detach', test_detach, depends: tests_deps)
+test('List Services', test_list_services, depends: tests_deps)
+test('Enable Service', test_enable_service, depends: tests_deps)
+test('Disable Service', test_disable_service, depends: tests_deps)
