@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (1.12) oracular; urgency=medium
+
+  * Pass the token via a private temporary attach config file (lp: #2068944)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 27 Jun 2024 14:31:53 +0200
+
 ubuntu-advantage-desktop-daemon (1.11) noble; urgency=medium
 
   * Use preferred `pro` command instead of `ua` command
