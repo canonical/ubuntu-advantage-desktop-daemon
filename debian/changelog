@@ -1,3 +1,9 @@
+ubuntu-advantage-desktop-daemon (1.13) UNRELEASED; urgency=medium
+
+  * debian/control: Build-Depends on systemd-dev instead of systemd
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 27 Mar 2025 11:34:26 +0100
+
 ubuntu-advantage-desktop-daemon (1.12) oracular; urgency=medium
 
   * Pass the token via a private temporary attach config file (lp: #2068944)
